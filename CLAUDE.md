@@ -12,7 +12,15 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
   - `build.py` also needs `items.json` (cocktail → ingredient → supplier, from the sheet's "Ingredients & Suppliers" tab). The script that produces it is not in this repo yet.
 - `scripts/inject.py`: writes `dist/` (index.html + `manifest.webmanifest`, `sw.js`, `icons/`).
 - `.github/workflows/deploy.yml`: on push to `main`, runs inject.py and publishes `dist/` to GitHub Pages.
+- `sync.json`: Supabase project URL + public anon key for phone sync. Empty values hide the sync UI. The key is public by design; row-level security protects the data.
 - `private/` (git-ignored): the owner's real `data.json` and config.
+
+## Phone sync (Supabase)
+- Table `public.app_state(user_id uuid pk default auth.uid(), state jsonb, data jsonb, updated_at timestamptz)` with RLS policy "own row only" (`auth.uid() = user_id`). SQL is in README.
+- Login is email + password (`signInWithPassword` / `signUp`) with "Confirm email" turned off in Supabase, so no emails are sent. Not magic links (iOS home-screen apps don't share storage with Safari) and not email codes (free projects can't edit email templates without custom SMTP).
+- supabase-js is loaded from jsdelivr (pinned version, `SUPA_JS`) only when sync is configured; `sw.js` caches it.
+- Pull happens on start, on returning to the foreground and on `online`. Push is a debounced upsert after `save()`. Newest `updated_at` vs `st.updatedAt` wins. On first sign-in the cloud copy wins.
+- Imported data syncs via its `importedAt` stamp. "Use sample data" stores a `{sample:true, importedAt}` marker so other phones follow.
 
 ## Build
     python scripts/inject.py                               # build dist/
@@ -20,7 +28,7 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
     python scripts/parse.py && python scripts/build.py     # only when the sheet changes; run in a folder containing hops.xlsx
 
 ## Notes
-- App state (cart, WhatsApp numbers, notes, history, custom items) lives in localStorage key `supplier-orders`. The `claude.use("db")` sync only works when published as a claude.ai artifact; elsewhere it does nothing.
+- App state (cart, WhatsApp numbers, notes, history, custom items) lives in localStorage key `supplier-orders`, and is synced to Supabase when signed in.
 - `sw.js` is network-first for the page and cache-first for icons and fonts. Bump `CACHE` when changing the shell file list.
 - WhatsApp sending uses `https://wa.me/<number>?text=...`; 8-digit numbers get the 65 prefix.
 - Never commit real prices, supplier contacts or the business name.

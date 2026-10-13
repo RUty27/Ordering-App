@@ -115,6 +115,9 @@ nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
 .hint{font-size:13px;color:var(--muted);margin:8px 2px 0}
 .datablk{margin-top:28px}
 .datablk .actions{align-items:center}
+.signin{display:grid;gap:8px;margin-top:12px}
+.signin input{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);min-width:0}
+.signin .actions{margin-top:4px}
 @media (max-width:520px){.add{grid-template-columns:1fr}.srow input{width:130px}}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 </style>
@@ -152,7 +155,6 @@ const SUP = Object.fromEntries(DATA.suppliers.map(s => [s.n, s]));
 const ONLINE_NOTE = "Online store — copy as a shopping list";
 let st = { cart:{}, phones:{}, notes:{}, custom:[], history:[], outlet:OUTLETS[0] };
 let tab = "items", q = "", fSup = "", fCock = "";
-let db = null, docRef = null, saveT = null;
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -163,24 +165,61 @@ function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");cl
 
 /* ---------- storage ---------- */
 function loadLocal(){try{const v=localStorage.getItem("supplier-orders");if(v)st=Object.assign(st,JSON.parse(v))}catch(e){}}
-function save(){
-  try{localStorage.setItem("supplier-orders",JSON.stringify(st))}catch(e){}
-  if(!docRef) return;
-  clearTimeout(saveT);
-  saveT=setTimeout(async()=>{try{await docRef.set(JSON.parse(JSON.stringify(st)));$("#sync").textContent="Synced across your devices"}catch(e){$("#sync").textContent="Couldn't sync — saved on this device"}},700);
+function saveLocal(){try{localStorage.setItem("supplier-orders",JSON.stringify(st))}catch(e){}}
+function save(){st.updatedAt=Date.now();saveLocal();schedulePush()}
+
+/* ---------- sync between phones (Supabase) ---------- */
+const SYNC = __SYNC__;
+const SYNC_ON = !!(SYNC&&SYNC.url&&SYNC.key);
+const SUPA_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js";
+let sb=null, user=null, pending=false, pushT=null;
+const syncMsg=t=>{$("#sync").textContent=t};
+const offline=()=>{syncMsg("Offline. Will sync when back online")};
+const lastSync=()=>{try{return +localStorage.getItem("supplier-orders-synced")||0}catch(e){return 0}};
+const markSynced=()=>{try{localStorage.setItem("supplier-orders-synced",Date.now())}catch(e){}syncMsg("Synced")};
+function rawData(){try{return JSON.parse(localStorage.getItem(DATA_KEY))}catch(e){return null}}
+const dataStamp=d=>d&&d.importedAt||"";
+function schedulePush(){if(!user)return;pending=true;clearTimeout(pushT);pushT=setTimeout(push,1000)}
+async function push(){
+  if(!user||!pending)return;
+  if(!navigator.onLine)return offline();
+  const row={user_id:user.id,state:st,updated_at:new Date(st.updatedAt||Date.now()).toISOString()};
+  const d=rawData();if(d)row.data=d;
+  const {error}=await sb.from("app_state").upsert(row);
+  if(error)return syncMsg("Couldn't sync. Saved on this device");
+  pending=false;markSynced();
 }
-async function connect(){
+async function pull(preferRemote){
+  if(!user)return;
+  if(!navigator.onLine)return offline();
+  const {data:row,error}=await sb.from("app_state").select("state,data,updated_at").maybeSingle();
+  if(error)return syncMsg("Couldn't sync. Saved on this device");
+  let reload=false;
+  const rd=row&&row.data&&(validData(row.data)||row.data.sample)?row.data:null;
+  if(rd&&(preferRemote||dataStamp(rd)>dataStamp(rawData()))){
+    if(dataStamp(rd)!==dataStamp(rawData())){try{localStorage.setItem(DATA_KEY,JSON.stringify(rd));reload=true}catch(e){}}
+  }else if(dataStamp(rawData())>dataStamp(rd))pending=true;
+  const rt=row?Date.parse(row.updated_at):0, lt=st.updatedAt||0;
+  if(row&&row.state&&(preferRemote||rt>lt)){
+    st=Object.assign({cart:{},phones:{},notes:{},custom:[],history:[],outlet:OUTLETS[0]},row.state,{updatedAt:rt});saveLocal();
+  }else if(!row||lt>rt)pending=true;
+  if(pending)await push();else markSynced();
+  if(reload)return location.reload();
+  render();
+}
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
+async function initSync(){
+  if(!SYNC_ON)return;
   try{
-    if(!window.claude) return;
-    const [d,u]=await Promise.all([claude.use("db"),claude.use("user")]);
-    if(!d||!u) return;
-    const uid=await u.id(); if(!uid) return;
-    db=d; docRef=db.doc("data/users/"+uid+"/state");
-    const snap=await docRef.get();
-    if(snap.exists){st=Object.assign(st,snap.data());render()}else{save()}
-    $("#sync").textContent="Synced across your devices";
-  }catch(e){}
+    await loadScript(SUPA_JS);
+    sb=supabase.createClient(SYNC.url,SYNC.key);
+    const {data}=await sb.auth.getSession();
+    user=data.session?data.session.user:null;
+    if(user)await pull();else if(tab==="suppliers")render();
+  }catch(e){syncMsg(navigator.onLine?"Couldn't load sync. Saved on this device":"Offline. Saved on this device");if(tab==="suppliers")render()}
 }
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pull()});
+window.addEventListener("online",()=>pull());
 
 /* ---------- cart helpers ---------- */
 const qtyNum = v => {const m=String(v||"").match(/[\d.]+/);return m?parseFloat(m[0]):0};
@@ -274,13 +313,30 @@ function suppliersView(){
     ${s.t==="chat"?`<input inputmode="tel" data-phone="${esc(s.n)}" value="${esc(st.phones[s.n]||"")}" placeholder="WhatsApp no." aria-label="WhatsApp number for ${esc(s.n)}">`:"<span></span>"}
     ${s.m||s.cut?`<div class="sub">${[s.m?"MOQ "+esc(s.m):"",s.cut?esc(s.cut):""].filter(Boolean).join(". ")}</div>`:""}
   </div>`).join("")}</div>
+  ${syncView()}
   ${dataView()}`;
+}
+function syncView(){
+  if(!SYNC_ON) return "";
+  let body;
+  if(!sb) body=`<p class="sub" style="margin:0 2px">Sync isn't available right now. Your changes are saved on this phone.</p>`;
+  else if(user){
+    const t=lastSync();
+    body=`<p class="sub" style="margin:0 2px">Signed in as ${esc(user.email||"")}${t?`. Last synced ${new Date(t).toLocaleTimeString("en-SG",{hour:"numeric",minute:"2-digit"})}`:""}.</p>
+    <div class="actions"><button class="link" data-signout="1">Sign out</button></div>`;
+  }else{
+    body=`<p class="sub" style="margin:0 2px">Keep both phones up to date. Create your account on your main phone, then sign in with the same email and password on the other.</p>
+    <form class="signin" id="signin"><input name="email" type="email" autocomplete="email" placeholder="Email" required aria-label="Email">
+    <input name="password" type="password" autocomplete="current-password" placeholder="Password (8+ characters)" minlength="8" required aria-label="Password">
+    <div class="actions"><button class="btn primary" value="in">Sign in</button><button class="btn" value="up">Create account</button></div></form>`;
+  }
+  return `<section class="datablk"><div class="ghead"><h2>Sync between phones</h2><span class="meta">${user?"On":"Off"}</span></div>${body}</section>`;
 }
 function dataView(){
   const imp=DATA!==SAMPLE;
   const when=imp&&DATA.importedAt?", imported "+new Date(DATA.importedAt).toLocaleDateString("en-SG",{day:"numeric",month:"short"}):"";
   return `<section class="datablk"><div class="ghead"><h2>Data</h2><span class="meta">${imp?`Your data${esc(when)}`:"Sample data"}, ${DATA.items.length} items</span></div>
-  <p class="sub" style="margin:0 2px">Load your own data.json. It stays on this phone only.</p>
+  <p class="sub" style="margin:0 2px">Load your own data.json. ${user?"It syncs to your other signed-in phone, and nowhere public.":"It stays on this phone only."}</p>
   <div class="actions"><button class="btn" data-import="1">Import data.json</button>${imp?'<button class="link" data-sample="1">Use sample data</button>':""}</div>
   <input type="file" id="file" accept=".json,application/json" hidden></section>`;
 }
@@ -328,7 +384,8 @@ view.addEventListener("click",async e=>{
   else if(b.dataset.repeat){const last=st.history.find(x=>x.s===b.dataset.repeat);last.lines.forEach(l=>{if(byId(l.id))st.cart[l.id]=l.q});save();render();toast("Last order added")}
   else if(b.dataset.goto){tab=b.dataset.goto;render()}
   else if(b.dataset.import){$("#file").click()}
-  else if(b.dataset.sample){if(confirm("Switch back to the sample data? You can import your file again any time.")){try{localStorage.removeItem(DATA_KEY)}catch(err){}location.reload()}}
+  else if(b.dataset.signout){await sb.auth.signOut();user=null;syncMsg("Saved on this device");render()}
+  else if(b.dataset.sample){if(confirm("Switch back to the sample data? You can import your file again any time.")){try{localStorage.setItem(DATA_KEY,JSON.stringify({sample:true,importedAt:new Date().toISOString()}))}catch(err){}location.reload()}}
   else if(b.dataset.copy||b.dataset.wa){
     const s=b.dataset.copy||b.dataset.wa, lines=cartBySupplier()[s], sp=SUP[s]||{};
     const msg=sp.t==="online"?lines.map(l=>`${l.it.n} × ${l.q}`).join("\n"):message(s,lines);
@@ -343,13 +400,27 @@ view.addEventListener("click",async e=>{
     save();render();toast(`${s} order marked as sent`);
   }
 });
-view.addEventListener("submit",e=>{
-  if(e.target.id!=="add")return;e.preventDefault();
+view.addEventListener("submit",async e=>{
+  const f0=e.target;
+  if(f0.id==="signin"){
+    e.preventDefault();
+    const create=e.submitter&&e.submitter.value==="up", btns=f0.querySelectorAll("button");
+    const email=f0.email.value.trim(), password=f0.password.value;
+    btns.forEach(x=>x.disabled=true);
+    const {data,error}=create?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
+    btns.forEach(x=>x.disabled=false);
+    if(!navigator.onLine)return toast("You're offline");
+    if(error)return toast(create?(/registered|exists/i.test(error.message)?"Account exists. Use Sign in":"Couldn't create the account"):"Wrong email or password");
+    if(!data.session)return toast("Turn off 'Confirm email' in Supabase, then try again");
+    user=data.user;toast("Signed in. Sync is on");await pull(true);
+    return;
+  }
+  if(f0.id!=="add")return;e.preventDefault();
   const f=new FormData(e.target),n=f.get("n").trim();if(!n)return;
   st.custom.push({id:"c"+Date.now(),n,s:f.get("s")});save();q=n;fSup="";fCock="";render();toast("Item added");
 });
 
-loadLocal(); render(); connect();
+loadLocal(); render(); initSync();
 if("serviceWorker" in navigator&&location.protocol!=="file:") navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
