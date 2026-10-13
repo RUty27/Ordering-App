@@ -115,6 +115,9 @@ nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
 .hint{font-size:13px;color:var(--muted);margin:8px 2px 0}
 .datablk{margin-top:28px}
 .datablk .actions{align-items:center}
+.signin{display:grid;gap:8px;margin-top:12px}
+.signin input{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);min-width:0}
+.signin .actions{margin-top:4px}
 @media (max-width:520px){.add{grid-template-columns:1fr}.srow input{width:130px}}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 </style>
@@ -169,7 +172,7 @@ function save(){st.updatedAt=Date.now();saveLocal();schedulePush()}
 const SYNC = __SYNC__;
 const SYNC_ON = !!(SYNC&&SYNC.url&&SYNC.key);
 const SUPA_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js";
-let sb=null, user=null, pending=false, pushT=null, otpEmail="";
+let sb=null, user=null, pending=false, pushT=null;
 const syncMsg=t=>{$("#sync").textContent=t};
 const offline=()=>{syncMsg("Offline. Will sync when back online")};
 const lastSync=()=>{try{return +localStorage.getItem("supplier-orders-synced")||0}catch(e){return 0}};
@@ -321,13 +324,11 @@ function syncView(){
     const t=lastSync();
     body=`<p class="sub" style="margin:0 2px">Signed in as ${esc(user.email||"")}${t?`. Last synced ${new Date(t).toLocaleTimeString("en-SG",{hour:"numeric",minute:"2-digit"})}`:""}.</p>
     <div class="actions"><button class="link" data-signout="1">Sign out</button></div>`;
-  }else if(!otpEmail){
-    body=`<p class="sub" style="margin:0 2px">Keep both phones up to date. Sign in on your main phone first: on any other phone, the synced copy replaces what's there.</p>
-    <form class="add" id="otp1" style="grid-template-columns:1fr auto;margin-top:12px"><input name="email" type="email" autocomplete="email" placeholder="Your email" required aria-label="Email"><button class="btn primary">Email me a code</button></form>`;
   }else{
-    body=`<p class="sub" style="margin:0 2px">We sent a 6-digit code to ${esc(otpEmail)}.</p>
-    <form class="add" id="otp2" style="grid-template-columns:1fr auto;margin-top:12px"><input name="code" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code" required aria-label="Code"><button class="btn primary">Sign in</button></form>
-    <div class="actions"><button class="link" data-otpreset="1">Use a different email</button></div>`;
+    body=`<p class="sub" style="margin:0 2px">Keep both phones up to date. Create your account on your main phone, then sign in with the same email and password on the other.</p>
+    <form class="signin" id="signin"><input name="email" type="email" autocomplete="email" placeholder="Email" required aria-label="Email">
+    <input name="password" type="password" autocomplete="current-password" placeholder="Password (8+ characters)" minlength="8" required aria-label="Password">
+    <div class="actions"><button class="btn primary" value="in">Sign in</button><button class="btn" value="up">Create account</button></div></form>`;
   }
   return `<section class="datablk"><div class="ghead"><h2>Sync between phones</h2><span class="meta">${user?"On":"Off"}</span></div>${body}</section>`;
 }
@@ -383,8 +384,7 @@ view.addEventListener("click",async e=>{
   else if(b.dataset.repeat){const last=st.history.find(x=>x.s===b.dataset.repeat);last.lines.forEach(l=>{if(byId(l.id))st.cart[l.id]=l.q});save();render();toast("Last order added")}
   else if(b.dataset.goto){tab=b.dataset.goto;render()}
   else if(b.dataset.import){$("#file").click()}
-  else if(b.dataset.signout){await sb.auth.signOut();user=null;otpEmail="";syncMsg("Saved on this device");render()}
-  else if(b.dataset.otpreset){otpEmail="";render()}
+  else if(b.dataset.signout){await sb.auth.signOut();user=null;syncMsg("Saved on this device");render()}
   else if(b.dataset.sample){if(confirm("Switch back to the sample data? You can import your file again any time.")){try{localStorage.setItem(DATA_KEY,JSON.stringify({sample:true,importedAt:new Date().toISOString()}))}catch(err){}location.reload()}}
   else if(b.dataset.copy||b.dataset.wa){
     const s=b.dataset.copy||b.dataset.wa, lines=cartBySupplier()[s], sp=SUP[s]||{};
@@ -402,18 +402,17 @@ view.addEventListener("click",async e=>{
 });
 view.addEventListener("submit",async e=>{
   const f0=e.target;
-  if(f0.id==="otp1"||f0.id==="otp2"){
-    e.preventDefault();const btn=f0.querySelector("button");btn.disabled=true;
-    if(f0.id==="otp1"){
-      const email=f0.email.value.trim();
-      const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
-      if(error){btn.disabled=false;return toast(navigator.onLine?"Couldn't send the code. Try again in a minute":"You're offline")}
-      otpEmail=email;render();
-    }else{
-      const {data,error}=await sb.auth.verifyOtp({email:otpEmail,token:f0.code.value.trim(),type:"email"});
-      if(error){btn.disabled=false;return toast("That code didn't work")}
-      user=data.user;otpEmail="";toast("Signed in. Sync is on");await pull(true);
-    }
+  if(f0.id==="signin"){
+    e.preventDefault();
+    const create=e.submitter&&e.submitter.value==="up", btns=f0.querySelectorAll("button");
+    const email=f0.email.value.trim(), password=f0.password.value;
+    btns.forEach(x=>x.disabled=true);
+    const {data,error}=create?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
+    btns.forEach(x=>x.disabled=false);
+    if(!navigator.onLine)return toast("You're offline");
+    if(error)return toast(create?(/registered|exists/i.test(error.message)?"Account exists. Use Sign in":"Couldn't create the account"):"Wrong email or password");
+    if(!data.session)return toast("Turn off 'Confirm email' in Supabase, then try again");
+    user=data.user;toast("Signed in. Sync is on");await pull(true);
     return;
   }
   if(f0.id!=="add")return;e.preventDefault();

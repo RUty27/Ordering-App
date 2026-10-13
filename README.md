@@ -30,7 +30,7 @@ Before this app, that meant:
 - **Repeat last order:** reuses a supplier's previous order with one tap.
 - **Outlets and delivery date:** switch outlet and pick a delivery date; both go into the message.
 - **Works offline and installs on your phone:** it's a Progressive Web App (PWA), so it opens from the home screen like a normal app, even with no signal in the cellar.
-- **Sync between phones:** sign in with an emailed 6-digit code, and your order, supplier numbers, history and data stay the same on every phone. Optional, and free with Supabase.
+- **Sync between phones:** sign in with an email and password, and your order, supplier numbers, history and data stay the same on every phone. Optional, and free with Supabase.
 - **Your data stays private:** the public site ships with fake sample data. Real prices and suppliers are loaded with **Import data.json** and kept on your phone (and in your own Supabase account if you turn on sync), never in this repo.
 
 ## Using it with your own data
@@ -58,10 +58,10 @@ Sync uses a free [Supabase](https://supabase.com) project.
    create policy "own row only" on public.app_state for all
      using (auth.uid() = user_id) with check (auth.uid() = user_id);
    ```
-3. In **Authentication → Emails → Templates → Magic Link**, put `{{ .Token }}` in the email so it sends a 6-digit code.
+3. In **Authentication → Sign In / Providers → Email**, turn off **Confirm email** (sign-in uses email + password, so no emails are needed).
 4. Put your Project URL and anon (publishable) key in [`sync.json`](sync.json). The key is meant to be public; the row-level security rule above means each login can only read its own data.
 
-Sign in on your main phone first, then on the others.
+Create your account on your main phone first, then sign in on the others. Once all your phones are signed in, you can turn off **Allow new users to sign up**.
 
 ### Generating data.json from a spreadsheet
 
@@ -80,7 +80,7 @@ Business-specific settings (supplier name aliases, MOQs, cut-offs, outlets) live
 |---|---|---|
 | App | One HTML file, plain JavaScript, no framework | Fast on a phone, nothing to install, easy to change |
 | Storage | Browser `localStorage` | Free, private, works offline |
-| Sync | Supabase (Postgres + email-code login, row-level security) | Free tier; each user can only read their own row |
+| Sync | Supabase (Postgres + email/password login, row-level security) | Free tier; each user can only read their own row |
 | Data | JSON, generated from the team's Google Sheet | The sheet stays the source of truth |
 | Offline / install | Web app manifest + service worker | Home-screen app without an app store |
 | Hosting | GitHub Pages, deployed by GitHub Actions | Free; every push to `main` rebuilds and publishes |

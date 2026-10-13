@@ -17,7 +17,7 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
 
 ## Phone sync (Supabase)
 - Table `public.app_state(user_id uuid pk default auth.uid(), state jsonb, data jsonb, updated_at timestamptz)` with RLS policy "own row only" (`auth.uid() = user_id`). SQL is in README.
-- Login is an email 6-digit code (`signInWithOtp` / `verifyOtp` type `email`). The Supabase Magic Link email template must contain `{{ .Token }}`. No magic links, because iOS home-screen apps don't share storage with Safari.
+- Login is email + password (`signInWithPassword` / `signUp`) with "Confirm email" turned off in Supabase, so no emails are sent. Not magic links (iOS home-screen apps don't share storage with Safari) and not email codes (free projects can't edit email templates without custom SMTP).
 - supabase-js is loaded from jsdelivr (pinned version, `SUPA_JS`) only when sync is configured; `sw.js` caches it.
 - Pull happens on start, on returning to the foreground and on `online`. Push is a debounced upsert after `save()`. Newest `updated_at` vs `st.updatedAt` wins. On first sign-in the cloud copy wins.
 - Imported data syncs via its `importedAt` stamp. "Use sample data" stores a `{sample:true, importedAt}` marker so other phones follow.
