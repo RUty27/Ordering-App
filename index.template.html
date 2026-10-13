@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supplier Orders</title>
+<meta name="theme-color" content="#F7F8F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121614" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Orders">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F8F6; --surface:#FFFFFF; --ink:#18201D; --muted:#66706B; --line:#E2E6E3;
+  --accent:#1E5B4A; --accent-ink:#FFFFFF; --soft:#E7F0EC; --warn:#9A5B12; --warn-soft:#FBF1E3;
+  --chit:#FFFFFF; --chit-line:#D5DBD7;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121614; --surface:#1A201D; --ink:#E8EDEA; --muted:#97A39D; --line:#2B3430;
+    --accent:#6FC2A6; --accent-ink:#0E1A15; --soft:#1F2D27; --warn:#E3A857; --warn-soft:#2E2518;
+    --chit:#161B19; --chit-line:#33403A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121614; --surface:#1A201D; --ink:#E8EDEA; --muted:#97A39D; --line:#2B3430;
+  --accent:#6FC2A6; --accent-ink:#0E1A15; --soft:#1F2D27; --warn:#E3A857; --warn-soft:#2E2518;
+  --chit:#161B19; --chit-line:#33403A; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding:0 16px 120px}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:14px 0 10px;border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em;flex:1 1 auto}
+.ctx{display:flex;gap:8px}
+.ctx select,.ctx input{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:14px}
+nav{display:flex;gap:4px;margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px}
+nav button{flex:1;border:0;background:none;padding:8px 6px;border-radius:9px;font-weight:600;color:var(--muted)}
+nav button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.count{display:inline-block;min-width:20px;padding:0 6px;margin-left:4px;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-size:12px;line-height:20px}
+
+.tools{display:flex;gap:8px;margin:14px 0 6px;flex-wrap:wrap}
+.tools input[type=search]{flex:1 1 220px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.tools select{flex:1 1 140px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
+
+.group{margin-top:18px}
+.ghead{display:flex;align-items:baseline;gap:8px;padding:0 2px 6px}
+.ghead h2{font-size:15px;margin:0;font-weight:700}
+.ghead .meta{color:var(--muted);font-size:13px}
+.ghead .link{margin-left:auto}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row.on{background:var(--soft)}
+.info{flex:1;min-width:0}
+.name{font-weight:600;overflow-wrap:anywhere}
+.sub{color:var(--muted);font-size:13px}
+.promo{color:var(--warn)}
+.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--bg);flex:none}
+.step button{width:36px;height:36px;border:0;background:none;font-size:18px;color:var(--ink)}
+.step input{width:56px;height:36px;border:0;background:none;text-align:center;font-weight:600;padding:0}
+.link{border:0;background:none;color:var(--accent);font-weight:600;padding:4px 0;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:40px 16px}
+
+/* Order chits */
+.chit{background:var(--chit);border:1px solid var(--chit-line);border-radius:4px;margin-top:18px;position:relative}
+.chit::before,.chit::after{content:"";position:absolute;left:0;right:0;height:8px;background:radial-gradient(circle at 6px -2px,var(--bg) 5px,transparent 5.5px) 0 0/12px 8px repeat-x}
+.chit::before{top:-1px}
+.chit::after{bottom:-1px;transform:rotate(180deg)}
+.chit-in{padding:20px 16px 18px}
+.chit h3{margin:0;font-size:17px}
+.chit .meta{color:var(--muted);font-size:13px}
+.lines{list-style:none;margin:14px 0;padding:12px 0;border-top:1px dashed var(--chit-line);border-bottom:1px dashed var(--chit-line)}
+.lines li{display:flex;gap:10px;padding:3px 0}
+.lines li span:first-child{flex:1}
+.lines li span:last-child{font-weight:700;white-space:nowrap}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:6px 0 2px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.note{width:100%;min-height:40px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:8px 10px;resize:vertical;margin-top:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.flag{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:6px 10px;font-size:13px;margin-top:10px}
+
+/* Suppliers */
+.srow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:12px;border-top:1px solid var(--line);align-items:center}
+.srow:first-child{border-top:0}
+.srow input{width:150px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--bg)}
+.srow .sub{grid-column:1/-1}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:var(--soft);color:var(--accent);margin-left:6px;font-weight:600}
+
+.add{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:22px}
+.add input,.add select{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);min-width:0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+.sync{font-size:12px;color:var(--muted);margin-top:28px;text-align:center}
+.hint{font-size:13px;color:var(--muted);margin:8px 2px 0}
+.datablk{margin-top:28px}
+.datablk .actions{align-items:center}
+@media (max-width:520px){.add{grid-template-columns:1fr}.srow input{width:130px}}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top">
+      <h1>Supplier orders</h1>
+      <div class="ctx">
+        <select id="outlet" aria-label="Outlet"></select>
+        <input id="date" type="date" aria-label="Delivery date">
+      </div>
+    </div>
+    <nav role="tablist">
+      <button role="tab" data-tab="items" aria-selected="true">Items</button>
+      <button role="tab" data-tab="order" aria-selected="false">Order<span class="count" id="cnt" hidden></span></button>
+      <button role="tab" data-tab="suppliers" aria-selected="false">Suppliers</button>
+    </nav>
+    <p class="hint" id="hint" hidden>Showing sample data. Import yours in <button class="link" data-goto-top="suppliers">Suppliers</button>.</p>
+  </header>
+  <main id="view"></main>
+  <p class="sync" id="sync">Saved on this device</p>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const SAMPLE = __DATA__;
+const DATA_KEY = "supplier-orders-data";
+function loadImported(){try{const v=JSON.parse(localStorage.getItem(DATA_KEY));return validData(v)?v:null}catch(e){return null}}
+function validData(d){return !!d&&Array.isArray(d.items)&&Array.isArray(d.suppliers)&&d.items.every(i=>i&&i.n&&i.s&&i.id!=null)&&d.suppliers.every(s=>s&&s.n)}
+const DATA = loadImported() || SAMPLE;
+const OUTLETS = DATA.outlets&&DATA.outlets.length ? DATA.outlets : ["Main"];
+const SUP = Object.fromEntries(DATA.suppliers.map(s => [s.n, s]));
+const ONLINE_NOTE = "Online store — copy as a shopping list";
+let st = { cart:{}, phones:{}, notes:{}, custom:[], history:[], outlet:OUTLETS[0] };
+let tab = "items", q = "", fSup = "", fCock = "";
+let db = null, docRef = null, saveT = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const allItems = () => DATA.items.concat(st.custom);
+const byId = id => allItems().find(i => String(i.id) === String(id));
+const money = n => "$" + (Math.round(n*100)/100).toFixed(2).replace(/\.00$/,"");
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800)}
+
+/* ---------- storage ---------- */
+function loadLocal(){try{const v=localStorage.getItem("supplier-orders");if(v)st=Object.assign(st,JSON.parse(v))}catch(e){}}
+function save(){
+  try{localStorage.setItem("supplier-orders",JSON.stringify(st))}catch(e){}
+  if(!docRef) return;
+  clearTimeout(saveT);
+  saveT=setTimeout(async()=>{try{await docRef.set(JSON.parse(JSON.stringify(st)));$("#sync").textContent="Synced across your devices"}catch(e){$("#sync").textContent="Couldn't sync — saved on this device"}},700);
+}
+async function connect(){
+  try{
+    if(!window.claude) return;
+    const [d,u]=await Promise.all([claude.use("db"),claude.use("user")]);
+    if(!d||!u) return;
+    const uid=await u.id(); if(!uid) return;
+    db=d; docRef=db.doc("data/users/"+uid+"/state");
+    const snap=await docRef.get();
+    if(snap.exists){st=Object.assign(st,snap.data());render()}else{save()}
+    $("#sync").textContent="Synced across your devices";
+  }catch(e){}
+}
+
+/* ---------- cart helpers ---------- */
+const qtyNum = v => {const m=String(v||"").match(/[\d.]+/);return m?parseFloat(m[0]):0};
+function setQty(id,v){
+  v=String(v).trim();
+  if(!v||v==="0") delete st.cart[id]; else st.cart[id]=v;
+  save(); updateCount();
+}
+function bump(id,d){
+  const cur=st.cart[id]||"0", n=qtyNum(cur), unit=String(cur).replace(/^[\d.]+\s*/,"");
+  const next=Math.max(0,n+d);
+  setQty(id,next?(next+(unit?" "+unit:"")):"");
+}
+function cartBySupplier(){
+  const g={};
+  for(const [id,q] of Object.entries(st.cart)){const it=byId(id);if(!it)continue;(g[it.s]=g[it.s]||[]).push({it,q})}
+  return g;
+}
+function updateCount(){const n=Object.keys(st.cart).length,c=$("#cnt");c.hidden=!n;c.textContent=n}
+function fmtDate(v){if(!v)return"";const d=new Date(v+"T00:00");return d.toLocaleDateString("en-SG",{weekday:"short",day:"numeric",month:"short"})}
+function message(sup,lines){
+  const d=$("#date").value, note=(st.notes[sup]||"").trim();
+  let m=`Hi ${sup}, order for ${[DATA.business,st.outlet].filter(Boolean).join(" ")}${d?`, delivery ${fmtDate(d)}`:""}:\n\n`;
+  m+=lines.map(l=>`• ${l.it.n} × ${l.q}`).join("\n");
+  if(note) m+=`\n\n${note}`;
+  return m+"\n\nThank you!";
+}
+function waNumber(p){let d=String(p||"").replace(/\D/g,"");if(d.length===8)d="65"+d;return d}
+
+/* ---------- views ---------- */
+function itemsView(){
+  const term=q.toLowerCase();
+  const list=allItems().filter(i=>
+    (!fSup||i.s===fSup)&&(!fCock||(i.k||[]).includes(fCock))&&
+    (!term||i.n.toLowerCase().includes(term)||i.s.toLowerCase().includes(term)||(i.c||"").toLowerCase().includes(term)));
+  const cocks=[...new Set(DATA.items.flatMap(i=>i.k||[]))];
+  let h=`<div class="tools">
+    <input type="search" id="q" placeholder="Search items or suppliers" value="${esc(q)}">
+    <select id="fs"><option value="">All suppliers</option>${DATA.suppliers.map(s=>`<option ${s.n===fSup?"selected":""}>${esc(s.n)}</option>`).join("")}</select>
+    <select id="fc"><option value="">All cocktails</option>${cocks.map(c=>`<option ${c===fCock?"selected":""}>${esc(c)}</option>`).join("")}</select>
+  </div>`;
+  if(!list.length) h+=`<p class="empty">No items match. Try another search, or add it below.</p>`;
+  const g={};list.forEach(i=>(g[i.s]=g[i.s]||[]).push(i));
+  for(const s of Object.keys(g).sort()){
+    const sp=SUP[s]||{}, last=st.history.find(x=>x.s===s);
+    h+=`<section class="group"><div class="ghead"><h2>${esc(s)}</h2><span class="meta">${sp.m?"MOQ "+esc(sp.m):""}</span>${last?`<button class="link" data-repeat="${esc(s)}">Repeat last</button>`:""}</div><div class="list">`;
+    for(const i of g[s]){
+      const v=st.cart[i.id]||"";
+      const meta=[i.p!=null?money(i.p):i.pt, i.pk, i.c].filter(Boolean).map(esc).join(", ");
+      h+=`<div class="row ${v?"on":""}"><div class="info"><div class="name">${esc(i.n)}</div>
+        <div class="sub">${meta}${i.pr?` <span class="promo">${esc(i.pr)}</span>`:""}${i.k?`<br>${esc(i.k.join(", "))}`:""}</div></div>
+        <div class="step"><button aria-label="Less ${esc(i.n)}" data-b="${i.id}" data-d="-1">−</button><input aria-label="Quantity of ${esc(i.n)}" data-q="${i.id}" value="${esc(v)}" placeholder="0" inputmode="text"><button aria-label="More ${esc(i.n)}" data-b="${i.id}" data-d="1">+</button></div></div>`;
+    }
+    h+=`</div></section>`;
+  }
+  h+=`<form class="add" id="add"><input name="n" placeholder="Add an item not on the list" required><select name="s">${DATA.suppliers.map(s=>`<option>${esc(s.n)}</option>`).join("")}</select><button class="btn">Add item</button></form>`;
+  return h;
+}
+function orderView(){
+  const g=cartBySupplier(), keys=Object.keys(g).sort();
+  if(!keys.length) return `<p class="empty">Nothing in this order yet. Add quantities in Items, or use “Repeat last” on a supplier.</p>`;
+  return keys.map(s=>{
+    const sp=SUP[s]||{t:"chat"}, lines=g[s];
+    const priced=lines.filter(l=>l.it.p!=null), total=priced.reduce((a,l)=>a+l.it.p*qtyNum(l.q),0);
+    const allPriced=priced.length===lines.length;
+    let moq="";
+    if(sp.mn&&priced.length){
+      const pct=Math.min(100,total/sp.mn*100);
+      moq=`<div class="bar" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
+      <div class="meta">${allPriced?"":"About "}${money(total)} of ${esc(sp.m)} minimum</div>`;
+      if(total<sp.mn&&allPriced) moq+=`<div class="flag">Below minimum order by ${money(sp.mn-total)}</div>`;
+    }else if(priced.length){moq=`<div class="meta">${allPriced?"":"Priced items: "}${money(total)}</div>`}
+    const phone=st.phones[s], online=sp.t==="online", office=sp.t==="internal";
+    const send = online ? `<button class="btn primary" data-copy="${esc(s)}">Copy shopping list</button>`
+      : phone ? `<button class="btn primary" data-wa="${esc(s)}">Send on WhatsApp</button><button class="btn" data-copy="${esc(s)}">Copy</button>`
+      : `<button class="btn primary" data-copy="${esc(s)}">Copy message</button><button class="btn" data-goto="suppliers">Add WhatsApp number</button>`;
+    return `<article class="chit"><div class="chit-in">
+      <h3>${esc(s)}</h3>
+      <div class="meta">${online?ONLINE_NOTE:office?"Internal draw stock":lines.length+" item"+(lines.length>1?"s":"")}${sp.cut?", "+esc(sp.cut):""}</div>
+      <ul class="lines">${lines.map(l=>`<li><span>${esc(l.it.n)}</span><span>× ${esc(l.q)}</span></li>`).join("")}</ul>
+      ${moq}
+      <textarea class="note" data-note="${esc(s)}" placeholder="Add a note to this order (optional)">${esc(st.notes[s]||"")}</textarea>
+      <div class="actions">${send}<button class="btn" data-sent="${esc(s)}">Mark as sent</button></div>
+    </div></article>`;
+  }).join("");
+}
+function suppliersView(){
+  return `<p class="sub" style="margin:16px 2px 0">Add each supplier's WhatsApp number once. Singapore numbers can be 8 digits; others need the country code.</p>
+  <div class="list" style="margin-top:12px">${DATA.suppliers.map(s=>`<div class="srow">
+    <div><span class="name">${esc(s.n)}</span>${s.t==="online"?'<span class="tag">Online</span>':s.t==="internal"?'<span class="tag">Internal</span>':""}</div>
+    ${s.t==="chat"?`<input inputmode="tel" data-phone="${esc(s.n)}" value="${esc(st.phones[s.n]||"")}" placeholder="WhatsApp no." aria-label="WhatsApp number for ${esc(s.n)}">`:"<span></span>"}
+    ${s.m||s.cut?`<div class="sub">${[s.m?"MOQ "+esc(s.m):"",s.cut?esc(s.cut):""].filter(Boolean).join(". ")}</div>`:""}
+  </div>`).join("")}</div>
+  ${dataView()}`;
+}
+function dataView(){
+  const imp=DATA!==SAMPLE;
+  const when=imp&&DATA.importedAt?", imported "+new Date(DATA.importedAt).toLocaleDateString("en-SG",{day:"numeric",month:"short"}):"";
+  return `<section class="datablk"><div class="ghead"><h2>Data</h2><span class="meta">${imp?`Your data${esc(when)}`:"Sample data"}, ${DATA.items.length} items</span></div>
+  <p class="sub" style="margin:0 2px">Load your own data.json. It stays on this phone only.</p>
+  <div class="actions"><button class="btn" data-import="1">Import data.json</button>${imp?'<button class="link" data-sample="1">Use sample data</button>':""}</div>
+  <input type="file" id="file" accept=".json,application/json" hidden></section>`;
+}
+function render(){
+  if(!OUTLETS.includes(st.outlet)) st.outlet=OUTLETS[0];
+  $("#outlet").value=st.outlet;
+  $("#hint").hidden = DATA!==SAMPLE || tab==="suppliers";
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
+  $("#view").innerHTML = tab==="items"?itemsView():tab==="order"?orderView():suppliersView();
+  updateCount();
+}
+
+/* ---------- events ---------- */
+document.querySelector("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b){tab=b.dataset.tab;render();window.scrollTo(0,0)}});
+$("#outlet").innerHTML=OUTLETS.map(o=>`<option>${esc(o)}</option>`).join("");
+$("#hint").addEventListener("click",e=>{if(e.target.dataset.gotoTop){tab=e.target.dataset.gotoTop;render()}});
+$("#outlet").addEventListener("change",e=>{st.outlet=e.target.value;save()});
+(function(){const d=new Date();d.setDate(d.getDate()+1);$("#date").value=d.toISOString().slice(0,10)})();
+
+const view=$("#view");
+view.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.id==="q"){q=t.value;const pos=t.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(pos,pos)}
+  else if(t.dataset.note!==undefined){st.notes[t.dataset.note]=t.value;save()}
+  else if(t.dataset.phone!==undefined){st.phones[t.dataset.phone]=t.value.trim();save()}
+});
+view.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="fs"){fSup=t.value;render()}
+  else if(t.id==="fc"){fCock=t.value;render()}
+  else if(t.id==="file"&&t.files[0]){
+    t.files[0].text().then(txt=>{
+      let d;try{d=JSON.parse(txt)}catch(err){}
+      if(!validData(d)){toast("That file isn't a valid data.json");t.value="";return}
+      d.importedAt=new Date().toISOString();
+      try{localStorage.setItem(DATA_KEY,JSON.stringify(d))}catch(err){toast("Couldn't save. Phone storage full?");return}
+      location.reload();
+    });
+  }
+  else if(t.dataset.q!==undefined){setQty(t.dataset.q,t.value);t.closest(".row").classList.toggle("on",!!st.cart[t.dataset.q])}
+});
+view.addEventListener("click",async e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.b){bump(b.dataset.b,+b.dataset.d);const inp=view.querySelector(`[data-q="${b.dataset.b}"]`);inp.value=st.cart[b.dataset.b]||"";inp.closest(".row").classList.toggle("on",!!st.cart[b.dataset.b])}
+  else if(b.dataset.repeat){const last=st.history.find(x=>x.s===b.dataset.repeat);last.lines.forEach(l=>{if(byId(l.id))st.cart[l.id]=l.q});save();render();toast("Last order added")}
+  else if(b.dataset.goto){tab=b.dataset.goto;render()}
+  else if(b.dataset.import){$("#file").click()}
+  else if(b.dataset.sample){if(confirm("Switch back to the sample data? You can import your file again any time.")){try{localStorage.removeItem(DATA_KEY)}catch(err){}location.reload()}}
+  else if(b.dataset.copy||b.dataset.wa){
+    const s=b.dataset.copy||b.dataset.wa, lines=cartBySupplier()[s], sp=SUP[s]||{};
+    const msg=sp.t==="online"?lines.map(l=>`${l.it.n} × ${l.q}`).join("\n"):message(s,lines);
+    if(b.dataset.wa){window.open(`https://wa.me/${waNumber(st.phones[s])}?text=${encodeURIComponent(msg)}`,"_blank","noopener");return}
+    try{await navigator.clipboard.writeText(msg);toast("Copied")}catch(err){prompt("Copy this message:",msg)}
+  }
+  else if(b.dataset.sent){
+    const s=b.dataset.sent, lines=cartBySupplier()[s];
+    st.history.unshift({s,date:new Date().toISOString(),outlet:st.outlet,lines:lines.map(l=>({id:l.it.id,q:l.q}))});
+    st.history=st.history.slice(0,60);
+    lines.forEach(l=>delete st.cart[l.it.id]); delete st.notes[s];
+    save();render();toast(`${s} order marked as sent`);
+  }
+});
+view.addEventListener("submit",e=>{
+  if(e.target.id!=="add")return;e.preventDefault();
+  const f=new FormData(e.target),n=f.get("n").trim();if(!n)return;
+  st.custom.push({id:"c"+Date.now(),n,s:f.get("s")});save();q=n;fSup="";fCock="";render();toast("Item added");
+});
+
+loadLocal(); render(); connect();
+if("serviceWorker" in navigator&&location.protocol!=="file:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>

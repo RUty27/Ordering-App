@@ -1,0 +1,267 @@
+{
+ "business": "Sample Bar",
+ "outlets": [
+  "Outlet A",
+  "Outlet B"
+ ],
+ "items": [
+  {
+   "n": "Calamansi",
+   "s": "Citrus Lane",
+   "p": 9.0,
+   "c": "Fruit",
+   "pk": "500g",
+   "k": [
+    "Garden Spritz"
+   ],
+   "id": 0
+  },
+  {
+   "n": "Lemons",
+   "s": "Citrus Lane",
+   "p": 7.0,
+   "c": "Fruit",
+   "pk": "1kg",
+   "id": 1
+  },
+  {
+   "n": "Limes",
+   "s": "Citrus Lane",
+   "p": 6.5,
+   "c": "Fruit",
+   "pk": "1kg",
+   "k": [
+    "Sunset Sour",
+    "Garden Spritz"
+   ],
+   "id": 2
+  },
+  {
+   "n": "Mint",
+   "s": "Citrus Lane",
+   "pt": "Market price",
+   "c": "Herbs",
+   "pk": "1 bunch",
+   "id": 3
+  },
+  {
+   "n": "Pandan Leaves",
+   "s": "Citrus Lane",
+   "p": 3.5,
+   "c": "Herbs",
+   "pk": "1 bunch",
+   "k": [
+    "Kopi Martini"
+   ],
+   "id": 4
+  },
+  {
+   "n": "Demerara Syrup",
+   "s": "Golden Syrup Co",
+   "p": 18.0,
+   "c": "Syrup",
+   "pk": "1L",
+   "k": [
+    "Midnight Old Fashioned"
+   ],
+   "id": 5
+  },
+  {
+   "n": "Grenadine",
+   "s": "Golden Syrup Co",
+   "p": 16.5,
+   "c": "Syrup",
+   "pk": "700ml",
+   "pr": "Bundle of 3 at $45",
+   "id": 6
+  },
+  {
+   "n": "Gula Melaka Syrup",
+   "s": "Golden Syrup Co",
+   "pt": "Quote on request",
+   "c": "Syrup",
+   "pk": "1L",
+   "k": [
+    "Kopi Martini"
+   ],
+   "id": 7
+  },
+  {
+   "n": "Orgeat",
+   "s": "Golden Syrup Co",
+   "p": 22.0,
+   "c": "Syrup",
+   "pk": "700ml",
+   "id": 8
+  },
+  {
+   "n": "Blanco Tequila",
+   "s": "Harbour Spirits",
+   "p": 61.0,
+   "c": "Tequila",
+   "k": [
+    "Sunset Sour"
+   ],
+   "id": 9
+  },
+  {
+   "n": "Coffee Liqueur",
+   "s": "Harbour Spirits",
+   "p": 34.9,
+   "c": "Liqueur",
+   "k": [
+    "Kopi Martini"
+   ],
+   "id": 10
+  },
+  {
+   "n": "Harbour London Dry Gin",
+   "s": "Harbour Spirits",
+   "p": 48.5,
+   "c": "Gin",
+   "k": [
+    "Garden Spritz",
+    "Sunset Sour"
+   ],
+   "id": 11
+  },
+  {
+   "n": "Harbour White Rum",
+   "s": "Harbour Spirits",
+   "p": 39.0,
+   "c": "Rum",
+   "k": [
+    "Kopi Martini"
+   ],
+   "id": 12
+  },
+  {
+   "n": "Highland 12yo Whisky",
+   "s": "Harbour Spirits",
+   "p": 88.0,
+   "c": "Whisky",
+   "k": [
+    "Midnight Old Fashioned"
+   ],
+   "id": 13
+  },
+  {
+   "n": "Island Spiced Rum",
+   "s": "Harbour Spirits",
+   "p": 52.0,
+   "c": "Rum",
+   "pr": "Buy 6 get 1 free",
+   "id": 14
+  },
+  {
+   "n": "Bar Towels",
+   "s": "Office",
+   "c": "Consumables",
+   "id": 15
+  },
+  {
+   "n": "Ice Bags",
+   "s": "Office",
+   "c": "Consumables",
+   "id": 16
+  },
+  {
+   "n": "Receipt Paper Rolls",
+   "s": "Office",
+   "c": "Consumables",
+   "id": 17
+  },
+  {
+   "n": "Angostura Bitters",
+   "s": "Online Mart",
+   "p": 29.9,
+   "c": "Bitters",
+   "k": [
+    "Midnight Old Fashioned"
+   ],
+   "id": 18
+  },
+  {
+   "n": "Soda Water (24 cans)",
+   "s": "Online Mart",
+   "p": 14.8,
+   "c": "Mixer",
+   "k": [
+    "Garden Spritz"
+   ],
+   "id": 19
+  },
+  {
+   "n": "Tonic Water (24 cans)",
+   "s": "Online Mart",
+   "p": 19.6,
+   "c": "Mixer",
+   "id": 20
+  },
+  {
+   "n": "Cocktail Napkins",
+   "s": "Pack & Go",
+   "c": "Packaging",
+   "pk": "500 pcs / ctn",
+   "id": 21
+  },
+  {
+   "n": "Paper Straw (Black)",
+   "s": "Pack & Go",
+   "c": "Packaging",
+   "pk": "250 pcs / pkt",
+   "id": 22
+  },
+  {
+   "n": "Takeaway Cup 12oz",
+   "s": "Pack & Go",
+   "c": "Packaging",
+   "pk": "50 pcs × 20 pkt / ctn",
+   "id": 23
+  }
+ ],
+ "suppliers": [
+  {
+   "n": "Citrus Lane",
+   "t": "chat",
+   "m": "$80 + GST",
+   "mn": 80,
+   "cut": "Order by 4pm for next-day delivery"
+  },
+  {
+   "n": "Golden Syrup Co",
+   "t": "chat",
+   "m": null,
+   "mn": null,
+   "cut": null
+  },
+  {
+   "n": "Harbour Spirits",
+   "t": "chat",
+   "m": "$300",
+   "mn": 300,
+   "cut": null
+  },
+  {
+   "n": "Office",
+   "t": "internal",
+   "m": null,
+   "mn": null,
+   "cut": "Delivers Mondays only"
+  },
+  {
+   "n": "Online Mart",
+   "t": "online",
+   "m": null,
+   "mn": null,
+   "cut": null
+  },
+  {
+   "n": "Pack & Go",
+   "t": "chat",
+   "m": "$150",
+   "mn": 150,
+   "cut": "Weekday 3pm, Sat 11am for Monday delivery"
+  }
+ ]
+}
