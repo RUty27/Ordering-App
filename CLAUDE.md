@@ -4,6 +4,10 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
 
 ## Structure
 - `index.template.html`: the whole app (HTML/CSS/JS, no framework). `__DATA__` is replaced at build time with `data/data.json`.
+  - UI follows the design handoff (indigo, light + dark): bottom tabs Items / Suppliers / History, floating "Review order" button, Review order screen, bottom sheets (Delivery, Appearance, Send preview, Sent with Undo), welcome screen on first run.
+  - Design tokens are CSS variables (`--bg --sf --card --ink --mute --line --acc --accInk --a1 --a7 --ok --ok1`) on `:root` and `:root[data-theme="dark"]`. Fonts: Caprasimo (headings/buttons) + Figtree (body). Icons: inline Lucide SVG paths in the `ICON` map.
+  - Appearance choice (`system` | `light` | `dark`) is per phone in localStorage key `supplier-orders-theme` (not synced); an inline head script applies it before paint.
+  - Rendering is plain `innerHTML` (`render()` for the page, `renderSheet()` for sheets) with one delegated click handler keyed on `data-act`.
 - `data/data.json`: **fake sample data only** (this repo is public). Top-level keys: `business`, `outlets[]`, `items[]`, `suppliers[]`.
   - Item keys: `id`, `n` name, `s` supplier, `p` price, `pt` price text, `c` category, `pr` promo/note, `pk` pack size, `k` cocktails.
   - Supplier keys: `n` name, `t` type (`chat` | `online` | `internal` | `none`), `m` MOQ text, `mn` MOQ number, `cut` cut-off.

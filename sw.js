@@ -1,6 +1,6 @@
 // Offline support. The page is fetched network-first (so updates arrive when online)
 // and falls back to the cached copy when there's no signal.
-const CACHE = "supplier-orders-v2";
+const CACHE = "supplier-orders-v3";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

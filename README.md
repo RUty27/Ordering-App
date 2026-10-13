@@ -5,9 +5,11 @@ A phone-first web app that turns a bar's weekly supplier ordering into a few tap
 **[Live demo →](https://ruty27.github.io/Ordering-App/)** (runs on sample data; add it to your home screen to use it like an app)
 
 <p>
-  <img src="docs/screenshots/items.png" alt="Items list with search, supplier and cocktail filters" width="250">
-  <img src="docs/screenshots/order.png" alt="Order grouped by supplier, with a minimum-order progress bar" width="250">
-  <img src="docs/screenshots/suppliers.png" alt="Supplier list with WhatsApp numbers, MOQs and cut-off times" width="250">
+  <img src="docs/screenshots/items.png" alt="Items tab: search, supplier and cocktail chips, quantity controls and the Review order button" width="200">
+  <img src="docs/screenshots/review.png" alt="Review order: one card per supplier with a minimum-order bar and a reminder of how much to add" width="200">
+  <img src="docs/screenshots/send.png" alt="Send sheet previewing the WhatsApp message before it opens" width="200">
+  <img src="docs/screenshots/history.png" alt="History tab with sent orders and a Repeat button" width="200">
+  <img src="docs/screenshots/dark.png" alt="Review order in dark mode" width="200">
 </p>
 
 ## The problem
@@ -22,20 +24,21 @@ Before this app, that meant:
 
 ## What it does
 
-- **Pick items fast:** search by item or supplier, or filter by cocktail to restock everything a drink needs.
-- **Grouped by supplier automatically:** the Order tab shows one "chit" per supplier.
-- **MOQ check:** a progress bar shows how close each order is to the supplier's minimum, and warns if it's below.
-- **Cut-off reminders:** each supplier's ordering deadline and delivery days appear on its chit.
-- **One-tap WhatsApp:** opens WhatsApp with the message already written ("Hi …, order for [bar] [outlet], delivery Wed 14 Oct: …"). Online stores get a copyable shopping list instead.
-- **Repeat last order:** reuses a supplier's previous order with one tap.
-- **Outlets and delivery date:** switch outlet and pick a delivery date; both go into the message.
+- **Pick items fast:** search by item or supplier, or tap a supplier or cocktail chip to see just what you need. Tap + and −, or tap the number to type an amount like "2 ctn".
+- **Grouped by supplier automatically:** "Review order" shows one card per supplier.
+- **MOQ check:** a progress bar shows how close each order is to the supplier's minimum, and tells you how much more to add.
+- **Cut-off reminders:** each supplier's ordering deadline and delivery days appear on its card.
+- **Preview, then send:** see the exact message before WhatsApp opens ("Hi …, order for [bar] [outlet], delivery Thu 15 Oct: …"). Online stores get a copyable shopping list instead. After sending, jump straight to the next supplier, or undo.
+- **History and repeat:** every sent order is saved by date; repeat any of them, or a supplier's last order, with one tap.
+- **Outlets and delivery date:** one pill sets the outlet and delivery day; both go into the message.
+- **Light and dark mode:** follows your phone, or pick one.
 - **Works offline and installs on your phone:** it's a Progressive Web App (PWA), so it opens from the home screen like a normal app, even with no signal in the cellar.
 - **Sync between phones:** sign in with an email and password, and your order, supplier numbers, history and data stay the same on every phone. Optional, and free with Supabase.
 - **Your data stays private:** the public site ships with fake sample data. Real prices and suppliers are loaded with **Import data.json** and kept on your phone (and in your own Supabase account if you turn on sync), never in this repo.
 
 ## Using it with your own data
 
-1. Open the app and go to **Suppliers → Data → Import data.json**.
+1. On the welcome screen tap **Import my data.json**, or later go to **Suppliers → Your data → Import data.json**.
 2. Choose your `data.json` (see the format in [`CLAUDE.md`](CLAUDE.md), or copy [`data/data.json`](data/data.json)).
 3. The app reloads with your items. Tap **Use sample data** to switch back.
 
@@ -79,6 +82,7 @@ Business-specific settings (supplier name aliases, MOQs, cut-offs, outlets) live
 | Part | Choice | Why |
 |---|---|---|
 | App | One HTML file, plain JavaScript, no framework | Fast on a phone, nothing to install, easy to change |
+| Design | Caprasimo + Figtree type, Lucide icons, indigo light/dark theme | Built from a high-fidelity design handoff |
 | Storage | Browser `localStorage` | Free, private, works offline |
 | Sync | Supabase (Postgres + email/password login, row-level security) | Free tier; each user can only read their own row |
 | Data | JSON, generated from the team's Google Sheet | The sheet stays the source of truth |
@@ -109,7 +113,8 @@ I'm not a developer by training; I work behind the bar. I built this with **Clau
    - add the import feature
    - make it an installable offline app
    - set up free hosting with automatic deploys
-   - add sync between phones.
+   - add sync between phones
+   - rebuild the app to match a high-fidelity design handoff (new look, bottom tabs, send sheets, history, light and dark mode).
 
 What I learned: the hard part wasn't the code, it was knowing the workflow well enough to describe it precisely. Being the person who places the orders every week made the requirements obvious, and the AI made it possible to build them.
 
