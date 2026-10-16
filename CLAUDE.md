@@ -14,8 +14,8 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
   - Chip row: "In my order · n" (when the cart has items), All, "Cocktails ›" (switches the row to cocktail chips), then suppliers.
   - Rendering is plain `innerHTML` (`render()` for the page, `renderSheet()` for sheets) with one delegated click handler keyed on `data-act`.
 - `data/data.json`: **fake sample data only** (this repo is public). Top-level keys: `business`, `outlets[]`, `items[]`, `suppliers[]`.
-  - Item keys: `id`, `n` name, `s` supplier, `p` price, `pt` price text, `c` category, `pr` promo/note, `pk` pack size, `k` cocktails.
-  - Supplier keys: `n` name, `t` type (`chat` | `online` | `internal` | `none`), `m` MOQ text, `mn` MOQ number, `cut` cut-off.
+  - Item keys: `id`, `n` name, `s` supplier, `p` price, `pt` price text, `c` category, `pr` promo/note, `pk` pack size, `k` cocktails, `u` unit (btl, ctn, pkt…; optional).
+  - Supplier keys: `n` name, `t` type (`chat` | `online` | `internal` | `none`), `m` MOQ text, `mn` MOQ number, `cut` cut-off, `note` free-text note shown on supplier and review cards (optional).
 - Real data is never committed. Users load their own `data.json` with "Import data.json" (Suppliers tab). It is stored in localStorage key `supplier-orders-data` and overrides the built-in sample.
 - `scripts/parse.py` + `scripts/build.py`: regenerate `data.json` from a spreadsheet export (`hops.xlsx`). Business-specific settings (aliases, MOQs, cut-offs, extra items, business name, outlets) live in `scripts/config.local.json` (git-ignored). `scripts/config.example.json` is the committed fake version and the fallback.
   - `build.py` also needs `items.json` (cocktail → ingredient → supplier, from the sheet's "Ingredients & Suppliers" tab). The script that produces it is not in this repo yet.
