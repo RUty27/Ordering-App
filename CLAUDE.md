@@ -7,6 +7,11 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
   - UI follows the design handoff (indigo, light + dark): bottom tabs Items / Suppliers / History, floating "Review order" button, Review order screen, bottom sheets (Delivery, Appearance, Send preview, Sent with Undo), welcome screen on first run.
   - Design tokens are CSS variables (`--bg --sf --card --ink --mute --line --acc --accInk --a1 --a7 --ok --ok1`) on `:root` and `:root[data-theme="dark"]`. Fonts: Caprasimo (headings/buttons) + Figtree (body). Icons: inline Lucide SVG paths in the `ICON` map.
   - Appearance choice (`system` | `light` | `dark`) is per phone in localStorage key `supplier-orders-theme` (not synced); an inline head script applies it before paint.
+  - Ordering flow: Send → preview sheet → Open WhatsApp/Copy → "Sent?" sheet (`ask`). Only "Yes, sent" saves to History (`markSent`), then the Sent sheet offers Next / Undo.
+  - Review cards fix problems in place: "Add items" jumps to Items filtered to that supplier; chat suppliers without a number get a WhatsApp number field on the card.
+  - `dateClash()` reads the supplier's free-text `cut` for "<Day>s only" delivery days and a same-day cut-off time (e.g. "Order by 4pm") when the delivery date is tomorrow, and shows a warning on the card.
+  - Chosen delivery date is saved as `st.delivery` (yyyy-mm-dd) and kept while it's still one of the next four delivery days.
+  - Chip row: "In my order · n" (when the cart has items), All, "Cocktails ›" (switches the row to cocktail chips), then suppliers.
   - Rendering is plain `innerHTML` (`render()` for the page, `renderSheet()` for sheets) with one delegated click handler keyed on `data-act`.
 - `data/data.json`: **fake sample data only** (this repo is public). Top-level keys: `business`, `outlets[]`, `items[]`, `suppliers[]`.
   - Item keys: `id`, `n` name, `s` supplier, `p` price, `pt` price text, `c` category, `pr` promo/note, `pk` pack size, `k` cocktails.

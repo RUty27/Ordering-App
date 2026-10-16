@@ -24,11 +24,13 @@ Before this app, that meant:
 
 ## What it does
 
-- **Pick items fast:** search by item or supplier, or tap a supplier or cocktail chip to see just what you need. Tap + and −, or tap the number to type an amount like "2 ctn".
+- **Pick items fast:** search by item or supplier, or tap a chip to see just one supplier, one cocktail, or only what's already in your order. Tap + and −, or tap the number to type an amount like "2 ctn".
 - **Grouped by supplier automatically:** "Review order" shows one card per supplier.
 - **MOQ check:** a progress bar shows how close each order is to the supplier's minimum, and tells you how much more to add.
 - **Cut-off reminders:** each supplier's ordering deadline and delivery days appear on its card.
-- **Preview, then send:** see the exact message before WhatsApp opens ("Hi …, order for [bar] [outlet], delivery Thu 15 Oct: …"). Online stores get a copyable shopping list instead. After sending, jump straight to the next supplier, or undo.
+- **Preview, then send:** see the exact message before WhatsApp opens ("Hi …, order for [bar] [outlet], delivery Thu 15 Oct: …"). Online stores get a copyable shopping list instead. When you come back, confirm it was sent before it goes into History, then jump straight to the next supplier.
+- **Fix it on the spot:** below a minimum? "Add items" takes you to that supplier's items. No WhatsApp number yet? Type it right on the order card.
+- **Delivery warnings:** flags when the delivery date doesn't suit a supplier (e.g. "only delivers on Mondays", or today's cut-off has passed).
 - **History and repeat:** every sent order is saved by date; repeat any of them, or a supplier's last order, with one tap.
 - **Outlets and delivery date:** one pill sets the outlet and delivery day; both go into the message.
 - **Light and dark mode:** follows your phone, or pick one.

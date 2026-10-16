@@ -151,6 +151,9 @@ main.withfab{padding-bottom:calc(194px + env(safe-area-inset-bottom))}
 .summary{font-size:13px;color:var(--mute)}
 .callout{display:flex;gap:8px;align-items:center;margin-top:10px;padding:9px 14px;border-radius:16px;background:var(--a1);color:var(--a7);font-size:13px;font-weight:600}
 .callout .ic{width:16px;height:16px}
+.callout .go{margin-left:auto;border:0;background:none;padding:0 0 0 8px;color:inherit;font:700 13px var(--body);text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.callout.warn{background:var(--sf);color:var(--ink);font-weight:500}
+.card .field{margin-top:10px}
 .needs{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:13px;color:var(--mute)}
 .needs button{border:0;background:none;padding:0;color:var(--a7);font:700 13px var(--body);text-decoration:underline;text-underline-offset:3px}
 .note{display:block;width:100%;margin-top:12px;min-height:64px;border:1px solid var(--line);border-radius:18px;background:var(--bg);padding:10px 14px;font:14px var(--body);resize:none}
@@ -236,7 +239,7 @@ const SUP = Object.fromEntries(DATA.suppliers.map(s => [s.n, s]));
 const TYPE = {chat:"WhatsApp", online:"Online store", internal:"Internal", none:"Other"};
 let st = { cart:{}, phones:{}, notes:{}, custom:[], history:[], outlet:OUTLETS[0] };
 // UI state (not saved)
-let tab="items", screen=null, sheet=null, q="", filter=null, editing=null, noteOpen={}, undo=null, syncText="Saved on this device";
+let chipMode="", tab="items", screen=null, sheet=null, q="", filter=null, editing=null, noteOpen={}, undo=null, syncText="Saved on this device";
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -247,7 +250,7 @@ const plural = (n,w) => `${n} ${w}${n===1?"":"s"}`;
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),1800)}
 
 /* ---------- icons (Lucide, ISC licence) ---------- */
-const ICON = {"arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "history": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" /> <path d=\"M12 7v5l4 2\" />", "info": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 16v-4\" /> <path d=\"M12 8h.01\" />", "map-pin": "<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\" /> <circle cx=\"12\" cy=\"10\" r=\"3\" />", "martini": "<path d=\"M8 22h8\" /> <path d=\"M12 11v11\" /> <path d=\"m19 3-7 8-7-8Z\" />", "message-circle": "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\" />", "minus": "<path d=\"M5 12h14\" />", "moon": "<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\" />", "package": "<path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\" /> <path d=\"M12 22V12\" /> <path d=\"m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7\" /> <path d=\"m7.5 4.27 9 5.15\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "receipt": "<path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\" /> <path d=\"M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8\" /> <path d=\"M12 17.5v-11\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "scale": "<path d=\"m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\" /> <path d=\"m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\" /> <path d=\"M7 21h10\" /> <path d=\"M12 3v18\" /> <path d=\"M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2\" />", "search": "<circle cx=\"11\" cy=\"11\" r=\"8\" /> <path d=\"m21 21-4.3-4.3\" />", "smartphone": "<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\" /> <path d=\"M12 18h.01\" />", "sticky-note": "<path d=\"M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z\" /> <path d=\"M15 3v4a2 2 0 0 0 2 2h4\" />", "sun-moon": "<path d=\"M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.9 4.9 1.4 1.4\" /> <path d=\"m17.7 17.7 1.4 1.4\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.3 17.7-1.4 1.4\" /> <path d=\"m19.1 4.9-1.4 1.4\" />", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.93 4.93 1.41 1.41\" /> <path d=\"m17.66 17.66 1.41 1.41\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.34 17.66-1.41 1.41\" /> <path d=\"m19.07 4.93-1.41 1.41\" />", "truck": "<path d=\"M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2\" /> <path d=\"M15 18H9\" /> <path d=\"M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14\" /> <circle cx=\"17\" cy=\"18\" r=\"2\" /> <circle cx=\"7\" cy=\"18\" r=\"2\" />", "upload": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"17 8 12 3 7 8\" /> <line x1=\"12\" x2=\"12\" y1=\"3\" y2=\"15\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />"};
+const ICON = {"arrow-right": "<path d=\"M5 12h14\" /> <path d=\"m12 5 7 7-7 7\" />", "check": "<path d=\"M20 6 9 17l-5-5\" />", "chevron-down": "<path d=\"m6 9 6 6 6-6\" />", "chevron-right": "<path d=\"m9 18 6-6-6-6\" />", "chevron-left": "<path d=\"m15 18-6-6 6-6\" />", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />", "history": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" /> <path d=\"M12 7v5l4 2\" />", "info": "<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 16v-4\" /> <path d=\"M12 8h.01\" />", "map-pin": "<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\" /> <circle cx=\"12\" cy=\"10\" r=\"3\" />", "martini": "<path d=\"M8 22h8\" /> <path d=\"M12 11v11\" /> <path d=\"m19 3-7 8-7-8Z\" />", "message-circle": "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\" />", "minus": "<path d=\"M5 12h14\" />", "moon": "<path d=\"M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z\" />", "package": "<path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\" /> <path d=\"M12 22V12\" /> <path d=\"m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7\" /> <path d=\"m7.5 4.27 9 5.15\" />", "plus": "<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />", "receipt": "<path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\" /> <path d=\"M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8\" /> <path d=\"M12 17.5v-11\" />", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />", "scale": "<path d=\"m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\" /> <path d=\"m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\" /> <path d=\"M7 21h10\" /> <path d=\"M12 3v18\" /> <path d=\"M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2\" />", "search": "<circle cx=\"11\" cy=\"11\" r=\"8\" /> <path d=\"m21 21-4.3-4.3\" />", "smartphone": "<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\" /> <path d=\"M12 18h.01\" />", "sticky-note": "<path d=\"M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z\" /> <path d=\"M15 3v4a2 2 0 0 0 2 2h4\" />", "sun-moon": "<path d=\"M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.9 4.9 1.4 1.4\" /> <path d=\"m17.7 17.7 1.4 1.4\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.3 17.7-1.4 1.4\" /> <path d=\"m19.1 4.9-1.4 1.4\" />", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.93 4.93 1.41 1.41\" /> <path d=\"m17.66 17.66 1.41 1.41\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.34 17.66-1.41 1.41\" /> <path d=\"m19.07 4.93-1.41 1.41\" />", "truck": "<path d=\"M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2\" /> <path d=\"M15 18H9\" /> <path d=\"M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14\" /> <circle cx=\"17\" cy=\"18\" r=\"2\" /> <circle cx=\"7\" cy=\"18\" r=\"2\" />", "upload": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\" /> <polyline points=\"17 8 12 3 7 8\" /> <line x1=\"12\" x2=\"12\" y1=\"3\" y2=\"15\" />", "x": "<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />"};
 const ic = (n,cls="") => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]||""}</svg>`;
 
 /* ---------- appearance ---------- */
@@ -268,6 +271,26 @@ const fmtD = d => `${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`;
 // The next four delivery days from tomorrow, skipping Sundays
 const DAYS = (()=>{const out=[], d=new Date();d.setHours(0,0,0,0);while(out.length<4){d.setDate(d.getDate()+1);if(d.getDay()!==0)out.push(new Date(d))}return out})();
 let deliv = 0;
+const pad2 = n => String(n).padStart(2,"0");
+const isoD = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+// Use the saved delivery date while it's still one of the upcoming options; otherwise tomorrow
+const syncDeliv = () => {const i=DAYS.findIndex(d=>isoD(d)===st.delivery);deliv=i<0?0:i};
+// Reads a supplier's free-text cut-off for two rules: delivery-day limits ("Delivers Mondays only")
+// and a same-day order cut-off for next-day delivery ("Order by 4pm", "Weekday before 5pm, Sat before 12pm").
+const DAYNAMES=["sun","mon","tue","wed","thu","fri","sat"];
+function dateClash(sp){
+  const t=(sp&&sp.cut||"").toLowerCase(), d=DAYS[deliv];
+  if(!t) return "";
+  const only=t.match(/\b(sun|mon|tue|wed|thu|fri|sat)[a-z]*\s+only\b/);
+  if(only){const want=DAYNAMES.indexOf(only[1]);if(d.getDay()!==want)return `Only delivers on ${DOW[want]}days. You picked ${fmtD(d)}.`;return ""}
+  if(isTomorrow(d)){
+    const now=new Date(), sat=now.getDay()===6;
+    const m=(sat&&t.match(/sat[a-z]*\s+(?:before\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)/))||t.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/);
+    if(m){const h=(+m[1]%12)+(m[3]==="pm"?12:0), mins=h*60+(+(m[2]||0));
+      if(now.getHours()*60+now.getMinutes()>=mins) return `It's past today's ${m[1]}${m[2]?":"+m[2]:""}${m[3]} cut-off, so ${fmtD(d)} delivery may not happen.`}
+  }
+  return "";
+}
 const isTomorrow = d => {const t=new Date();t.setHours(0,0,0,0);t.setDate(t.getDate()+1);return d.getTime()===t.getTime()};
 
 /* ---------- storage ---------- */
@@ -366,12 +389,14 @@ function headerHTML(){
     <button class="iconbtn" data-act="theme" aria-label="Appearance">${ic("sun-moon")}</button></div>
     <h1 class="title">${title}</h1>`;
   if(tab==="items"){
-    const f=filter, cocks=[...new Set(DATA.items.flatMap(i=>i.k||[]))];
+    const f=filter, cocks=[...new Set(DATA.items.flatMap(i=>i.k||[]))], nCart=Object.values(cartBySupplier()).reduce((a,l)=>a+l.length,0);
     const chip=(label,c,icon)=>{const on=c?!!(f&&f.type===c.type&&f.v===c.v):!f;
       return `<button class="chip" aria-pressed="${on}" data-act="filter" data-t="${c?c.type:""}" data-v="${c?esc(c.v):""}">${icon?ic("martini"):""}${esc(label)}</button>`};
     h+=`<div class="search">${ic("search")}<input id="q" type="text" enterkeyhint="search" autocomplete="off" placeholder="Search items or suppliers" aria-label="Search items or suppliers" value="${esc(q)}">
       <button class="clear" data-act="clearq" aria-label="Clear search" ${q?"":"hidden"}>${ic("x")}</button></div>
-      <div class="chips" id="chips">${chip("All",null)}${DATA.suppliers.map(s=>chip(s.n,{type:"s",v:s.n})).join("")}${cocks.map(c=>chip(c,{type:"k",v:c},1)).join("")}</div>`;
+      <div class="chips" id="chips">${chipMode==="k"
+        ? `<button class="chip" data-act="chipmode" data-v="">${ic("chevron-left")}Suppliers</button>${cocks.map(c=>chip(c,{type:"k",v:c},1)).join("")}`
+        : `${nCart?chip(`In my order · ${nCart}`,{type:"o",v:""}):""}${chip("All",null)}${cocks.length?`<button class="chip" data-act="chipmode" data-v="k">${ic("martini")}Cocktails${ic("chevron-right")}</button>`:""}${DATA.suppliers.map(s=>chip(s.n,{type:"s",v:s.n})).join("")}`}</div>`;
   }
   return h+`</header>`;
 }
@@ -386,7 +411,7 @@ function qtyHTML(i){
 function itemsContent(){
   const term=q.trim().toLowerCase(), f=filter;
   const list=allItems().filter(i=>
-    (!f||(f.type==="s"?i.s===f.v:(i.k||[]).includes(f.v)))&&
+    (!f||(f.type==="o"?!!st.cart[i.id]:f.type==="s"?i.s===f.v:(i.k||[]).includes(f.v)))&&
     (!term||i.n.toLowerCase().includes(term)||i.s.toLowerCase().includes(term)||(i.c||"").toLowerCase().includes(term)));
   let h=list.length?"":`<p class="empty">No items match. Try another search.</p>`;
   const g={};list.forEach(i=>(g[i.s]=g[i.s]||[]).push(i));
@@ -469,15 +494,16 @@ function orderHTML(){
       const pct=Math.min(100,total/sp.mn*100);
       bar=`<div class="bar" role="progressbar" aria-label="Minimum order" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>`;
       summary=`${allPriced?"":"About "}${money(total)} of ${esc(sp.m)} minimum`;
-      if(total<sp.mn) below=`<div class="callout">${ic("info")}Add ${money(sp.mn-total)} to reach the minimum</div>`;
+      if(total<sp.mn) below=`<div class="callout">${ic("info")}Add ${money(sp.mn-total)} to reach the minimum<button class="go" data-act="additems" data-v="${esc(s)}">Add items</button></div>`;
     }else if(priced.length) summary=`${allPriced?"Total":"About"} ${money(total)}`;
     const act={wa:["Send on WhatsApp","message-circle"],copy:["Copy message","copy"],online:["Copy shopping list","copy"],internal:["Copy request","copy"]}[kind];
-    const open=noteOpen[s]||!!st.notes[s];
+    const open=noteOpen[s]||!!st.notes[s], clash=dateClash(SUP[s]);
     return `<article class="card"><div class="chead"><h2 class="cname">${esc(s)}</h2><span class="tag plain">${TYPE[sp.t]||"Supplier"}</span></div>
       ${sp.cut?`<div class="cut">${ic("clock")}${esc(sp.cut)}</div>`:""}
+      ${clash?`<div class="callout warn">${ic("clock")}${esc(clash)}</div>`:""}
       <ul class="lines">${lines.map(l=>`<li><span>${esc(l.it.n)}</span><b>× ${esc(l.q)}</b></li>`).join("")}</ul>
       ${bar}<div class="summary">${summary}</div>${below}
-      ${kind==="copy"?`<div class="needs">No WhatsApp number yet.<button data-act="gosup">Add it</button></div>`:""}
+      ${kind==="copy"&&sp.t==="chat"?`<label class="field">${ic("message-circle")}<input inputmode="tel" enterkeyhint="done" data-phone="${esc(s)}" data-card="1" placeholder="Add WhatsApp number" aria-label="WhatsApp number for ${esc(s)}"></label>`:""}
       ${open?`<textarea class="note" data-note="${esc(s)}" placeholder="Note for this supplier" aria-label="Note for ${esc(s)}">${esc(st.notes[s]||"")}</textarea>`:""}
       <div class="cact"><button class="btn grow" data-act="send" data-v="${esc(s)}">${ic(act[1])}${act[0]}</button>
       ${open?"":`<button class="round" data-act="note" data-v="${esc(s)}" aria-label="Add note for ${esc(s)}">${ic("sticky-note")}</button>`}</div></article>`;
@@ -515,9 +541,17 @@ function sheetHTML(){
       <button class="primary" data-act="confirm">${kind==="wa"?ic("message-circle")+"Open WhatsApp":ic("copy")+"Copy"}</button>
       <button class="textbtn" data-act="close">Cancel</button>`;
   }
+  if(sh.type==="ask"){
+    const k=sh.kind, s=esc(sh.s);
+    return `<h2 class="stitle" id="stitle">${k==="wa"?`Sent to ${s}?`:k==="online"?`Ordered from ${s}?`:`Copied. Sent to ${s}?`}</h2>
+      <p class="ssub">${k==="wa"?"Tap Yes once the message has gone in WhatsApp.":"Tap Yes once you've sent it."} It'll be saved to History.</p>
+      <button class="primary" data-act="yes">${ic("check")}Yes, sent</button>
+      <button class="textbtn acc" data-act="reopen">${k==="wa"?"Open WhatsApp again":"Copy again"}</button>
+      <button class="textbtn" data-act="close">Not yet</button>`;
+  }
   if(sh.type==="sent"){
     const left=Object.keys(cartBySupplier()).sort();
-    return `<div class="okc">${ic("check")}</div><h2 class="sentt" id="stitle">${sh.kind==="wa"?"Order sent":"Copied"}</h2>
+    return `<div class="okc">${ic("check")}</div><h2 class="sentt" id="stitle">Order sent</h2>
       <p class="ssub" style="font-size:15px">${esc(sh.s)}, ${plural(sh.n,"item")}. Saved to History.</p>
       <button class="primary" data-act="next" style="margin-top:24px">${left.length?`Next: ${esc(left[0])}`:"Done"}</button>
       <button class="textbtn acc" data-act="undo">Undo</button>`;
@@ -531,6 +565,9 @@ function renderSheet(){
 }
 function render(){
   if(!OUTLETS.includes(st.outlet)) st.outlet=OUTLETS[0];
+  syncDeliv();
+  if(filter&&filter.type==="o"&&!Object.keys(cartBySupplier()).length) filter=null;
+  if(filter&&filter.type==="k") chipMode="k";
   const c=$("#chips"), sl=c?c.scrollLeft:0;
   $("#app").innerHTML=screen==="welcome"?welcomeHTML():screen==="order"?orderHTML():tabsHTML();
   const c2=$("#chips"); if(c2) c2.scrollLeft=sl;
@@ -539,10 +576,18 @@ function render(){
 }
 
 /* ---------- actions ---------- */
-async function confirmSend(){
-  const s=sheet.s, kind=kindOf(s), msg=sendText(s);
+// Opens WhatsApp (or copies), then asks whether it was really sent before saving to History
+async function deliver(s,kind){
+  const msg=sendText(s);
   if(kind==="wa") window.open(`https://wa.me/${waNumber(st.phones[s])}?text=${encodeURIComponent(msg)}`,"_blank","noopener");
   else{try{await navigator.clipboard.writeText(msg)}catch(err){prompt("Copy this message:",msg)}}
+}
+async function confirmSend(){
+  const s=sheet.s, kind=kindOf(s);
+  await deliver(s,kind);
+  sheet={type:"ask",s,kind}; renderSheet();
+}
+function markSent(s,kind){
   const lines=cartBySupplier()[s]||[];
   undo={cart:{...st.cart},history:st.history.slice(),notes:{...st.notes}};
   st.history.unshift({s,date:new Date().toISOString(),outlet:st.outlet,lines:lines.map(l=>({id:l.it.id,q:l.q}))});
@@ -581,10 +626,14 @@ document.addEventListener("click",async e=>{
   else if(a==="theme"){sheet={type:"theme"};renderSheet()}
   else if(a==="close"){sheet=null;render()}
   else if(a==="outlet"){st.outlet=v;save();renderSheet()}
-  else if(a==="date"){deliv=+v;renderSheet()}
+  else if(a==="date"){st.delivery=isoD(DAYS[+v]);save();syncDeliv();renderSheet()}
   else if(a==="settheme"){setTheme(v);renderSheet()}
   else if(a==="send"){sheet={type:"send",s:v};renderSheet()}
   else if(a==="confirm"){await confirmSend()}
+  else if(a==="yes"){markSent(sheet.s,sheet.kind)}
+  else if(a==="reopen"){await deliver(sheet.s,sheet.kind)}
+  else if(a==="additems"){screen=null;tab="items";q="";chipMode="";filter={type:"s",v};render();window.scrollTo(0,0)}
+  else if(a==="chipmode"){chipMode=v;if(!v&&filter&&filter.type==="k")filter=null;render();const c=$("#chips");if(c)c.scrollLeft=0}
   else if(a==="next"){const left=Object.keys(cartBySupplier()).sort();
     if(left.length){sheet={type:"send",s:left[0]};renderSheet()}else{sheet=null;screen=null;tab="items";render();window.scrollTo(0,0)}}
   else if(a==="undo"){if(undo){Object.assign(st,undo);undo=null;save()}sheet=null;render()}
@@ -601,12 +650,17 @@ document.addEventListener("input",e=>{
   const t=e.target;
   if(t.id==="q"){q=t.value;$("#content").innerHTML=itemsContent();t.parentNode.querySelector(".clear").hidden=!q}
   else if(t.dataset.note!==undefined){st.notes[t.dataset.note]=t.value;save()}
-  else if(t.dataset.phone!==undefined){st.phones[t.dataset.phone]=t.value.trim();save();t.parentNode.querySelector(".okic").classList.toggle("off",!t.value.trim())}
+  else if(t.dataset.phone!==undefined){st.phones[t.dataset.phone]=t.value.trim();save();const ok=t.parentNode.querySelector(".okic");if(ok)ok.classList.toggle("off",!t.value.trim());
+    // On a review card, switch the send button as soon as a number is typed (no re-render, so the next tap isn't lost)
+    if(t.dataset.card){const b=t.closest(".card").querySelector('[data-act="send"]');if(b)b.innerHTML=t.value.trim()?ic("message-circle")+"Send on WhatsApp":ic("copy")+"Copy message"}}
 });
-document.addEventListener("change",e=>{if(e.target.id==="file"&&e.target.files[0])importFile(e.target.files[0])});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="file"&&t.files[0])importFile(t.files[0]);
+});
 document.addEventListener("focusout",e=>{if(e.target.id==="qedit")commitEdit(e.target)});
 document.addEventListener("keydown",e=>{
-  if(e.target.id==="qedit"&&e.key==="Enter"){e.preventDefault();e.target.blur()}
+  if((e.target.id==="qedit"||e.target.dataset.card)&&e.key==="Enter"){e.preventDefault();e.target.blur()}
   else if(e.key==="Escape"&&sheet){sheet=null;render()}
 });
 document.addEventListener("submit",async e=>{
