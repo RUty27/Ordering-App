@@ -420,7 +420,7 @@ function itemsContent(){
     h+=`<section class="group"><div class="ghead"><h2 class="gname">${esc(s)}</h2>${sp.m?`<span class="tag">Min ${esc(sp.m)}</span>`:""}
       ${last?`<button class="ghost" data-act="repeat" data-v="${esc(s)}">${ic("rotate-ccw")}Repeat last</button>`:""}</div><div class="list">`;
     for(const i of g[s]){
-      const meta=[i.p!=null?money(i.p):i.pt, i.pk, i.c].filter(Boolean).map(esc).join(" · ");
+      const meta=[i.p!=null?money(i.p):i.pt, i.pk, i.c, i.u].filter(Boolean).map(esc).join(" · ");
       h+=`<div class="row${st.cart[i.id]?" on":""}"><div class="info"><div class="name">${esc(i.n)}</div>
         ${meta?`<div class="sub">${meta}</div>`:""}${i.pr?`<div class="promo">${esc(i.pr)}</div>`:""}</div>${qtyHTML(i)}</div>`;
     }
@@ -437,7 +437,7 @@ function suppliersContent(){
   for(const s of DATA.suppliers){
     const info=[s.m?"Minimum "+s.m:"", s.cut||""].filter(Boolean).map(esc).join(" · "), ph=st.phones[s.n]||"";
     h+=`<div class="scard"><div class="shead"><div class="sname">${esc(s.n)}</div><span class="tag plain">${TYPE[s.t]||"Supplier"}</span></div>
-      ${info?`<div class="sinfo">${info}</div>`:""}
+      ${info?`<div class="sinfo">${info}</div>`:""}${s.note?`<div class="sinfo">${esc(s.note)}</div>`:""}
       ${s.t==="chat"?`<label class="field">${ic("message-circle")}<input inputmode="tel" data-phone="${esc(s.n)}" value="${esc(ph)}" placeholder="WhatsApp number" aria-label="WhatsApp number for ${esc(s.n)}">${ic("check","okic"+(ph?"":" off"))}</label>`:""}</div>`;
   }
   h+=`</div>`;
@@ -499,7 +499,7 @@ function orderHTML(){
     const act={wa:["Send on WhatsApp","message-circle"],copy:["Copy message","copy"],online:["Copy shopping list","copy"],internal:["Copy request","copy"]}[kind];
     const open=noteOpen[s]||!!st.notes[s], clash=dateClash(SUP[s]);
     return `<article class="card"><div class="chead"><h2 class="cname">${esc(s)}</h2><span class="tag plain">${TYPE[sp.t]||"Supplier"}</span></div>
-      ${sp.cut?`<div class="cut">${ic("clock")}${esc(sp.cut)}</div>`:""}
+      ${sp.cut?`<div class="cut">${ic("clock")}${esc(sp.cut)}</div>`:""}${sp.note?`<div class="cut">${ic("info")}${esc(sp.note)}</div>`:""}
       ${clash?`<div class="callout warn">${ic("clock")}${esc(clash)}</div>`:""}
       <ul class="lines">${lines.map(l=>`<li><span>${esc(l.it.n)}</span><b>× ${esc(l.q)}</b></li>`).join("")}</ul>
       ${bar}<div class="summary">${summary}</div>${below}

@@ -14,7 +14,8 @@
    "k": [
     "Garden Spritz"
    ],
-   "id": 0
+   "id": 0,
+   "u": "pkt"
   },
   {
    "n": "Lemons",
@@ -22,7 +23,8 @@
    "p": 7.0,
    "c": "Fruit",
    "pk": "1kg",
-   "id": 1
+   "id": 1,
+   "u": "pkt"
   },
   {
    "n": "Limes",
@@ -34,7 +36,8 @@
     "Sunset Sour",
     "Garden Spritz"
    ],
-   "id": 2
+   "id": 2,
+   "u": "pkt"
   },
   {
    "n": "Mint",
@@ -42,7 +45,8 @@
    "pt": "Market price",
    "c": "Herbs",
    "pk": "1 bunch",
-   "id": 3
+   "id": 3,
+   "u": "pkt"
   },
   {
    "n": "Pandan Leaves",
@@ -53,7 +57,8 @@
    "k": [
     "Kopi Martini"
    ],
-   "id": 4
+   "id": 4,
+   "u": "pkt"
   },
   {
    "n": "Demerara Syrup",
@@ -64,7 +69,8 @@
    "k": [
     "Midnight Old Fashioned"
    ],
-   "id": 5
+   "id": 5,
+   "u": "btl"
   },
   {
    "n": "Grenadine",
@@ -73,7 +79,8 @@
    "c": "Syrup",
    "pk": "700ml",
    "pr": "Bundle of 3 at $45",
-   "id": 6
+   "id": 6,
+   "u": "btl"
   },
   {
    "n": "Gula Melaka Syrup",
@@ -84,7 +91,8 @@
    "k": [
     "Kopi Martini"
    ],
-   "id": 7
+   "id": 7,
+   "u": "btl"
   },
   {
    "n": "Orgeat",
@@ -92,7 +100,8 @@
    "p": 22.0,
    "c": "Syrup",
    "pk": "700ml",
-   "id": 8
+   "id": 8,
+   "u": "btl"
   },
   {
    "n": "Blanco Tequila",
@@ -102,7 +111,8 @@
    "k": [
     "Sunset Sour"
    ],
-   "id": 9
+   "id": 9,
+   "u": "btl"
   },
   {
    "n": "Coffee Liqueur",
@@ -112,7 +122,8 @@
    "k": [
     "Kopi Martini"
    ],
-   "id": 10
+   "id": 10,
+   "u": "btl"
   },
   {
    "n": "Harbour London Dry Gin",
@@ -123,7 +134,8 @@
     "Garden Spritz",
     "Sunset Sour"
    ],
-   "id": 11
+   "id": 11,
+   "u": "btl"
   },
   {
    "n": "Harbour White Rum",
@@ -133,7 +145,8 @@
    "k": [
     "Kopi Martini"
    ],
-   "id": 12
+   "id": 12,
+   "u": "btl"
   },
   {
    "n": "Highland 12yo Whisky",
@@ -143,7 +156,8 @@
    "k": [
     "Midnight Old Fashioned"
    ],
-   "id": 13
+   "id": 13,
+   "u": "btl"
   },
   {
    "n": "Island Spiced Rum",
@@ -151,7 +165,8 @@
    "p": 52.0,
    "c": "Rum",
    "pr": "Buy 6 get 1 free",
-   "id": 14
+   "id": 14,
+   "u": "btl"
   },
   {
    "n": "Bar Towels",
@@ -179,7 +194,8 @@
    "k": [
     "Midnight Old Fashioned"
    ],
-   "id": 18
+   "id": 18,
+   "u": "ctn"
   },
   {
    "n": "Soda Water (24 cans)",
@@ -189,14 +205,16 @@
    "k": [
     "Garden Spritz"
    ],
-   "id": 19
+   "id": 19,
+   "u": "ctn"
   },
   {
    "n": "Tonic Water (24 cans)",
    "s": "Online Mart",
    "p": 19.6,
    "c": "Mixer",
-   "id": 20
+   "id": 20,
+   "u": "ctn"
   },
   {
    "n": "Cocktail Napkins",
@@ -226,7 +244,8 @@
    "t": "chat",
    "m": "$80 + GST",
    "mn": 80,
-   "cut": "Order by 4pm for next-day delivery"
+   "cut": "Order by 4pm for next-day delivery",
+   "note": "Ripe fruit only. Bar orders billed separately from kitchen."
   },
   {
    "n": "Golden Syrup Co",
