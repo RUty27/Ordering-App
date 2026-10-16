@@ -5,10 +5,11 @@ A phone-first web app that turns a bar's weekly supplier ordering into a few tap
 **[Live demo →](https://ruty27.github.io/Ordering-App/)** (runs on sample data; add it to your home screen to use it like an app)
 
 <p>
-  <img src="docs/screenshots/items.png" alt="Items tab: search, supplier and cocktail chips, quantity controls and the Review order button" width="200">
-  <img src="docs/screenshots/review.png" alt="Review order: one card per supplier with a minimum-order bar and a reminder of how much to add" width="200">
+  <img src="docs/screenshots/items.png" alt="Items tab: In my order, All and Cocktails chips, quantity controls and the Review order button" width="200">
+  <img src="docs/screenshots/review.png" alt="Review order card with a cut-off warning, an Add items link to reach the minimum, and a WhatsApp number field" width="200">
   <img src="docs/screenshots/send.png" alt="Send sheet previewing the WhatsApp message before it opens" width="200">
-  <img src="docs/screenshots/history.png" alt="History tab with sent orders and a Repeat button" width="200">
+  <img src="docs/screenshots/sent-check.png" alt="After WhatsApp: 'Sent to Harbour Spirits?' with Yes, sent / Open WhatsApp again / Not yet" width="200">
+  <img src="docs/screenshots/history.png" alt="History tab with today's sent orders and Repeat buttons" width="200">
   <img src="docs/screenshots/dark.png" alt="Review order in dark mode" width="200">
 </p>
 
