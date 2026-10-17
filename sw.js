@@ -1,6 +1,6 @@
 // Offline support. The page is fetched network-first (so updates arrive when online)
 // and falls back to the cached copy when there's no signal.
-const CACHE = "supplier-orders-v3";
+const CACHE = "supplier-orders-v4";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -34,4 +34,22 @@ self.addEventListener("fetch", e => {
     if (res.ok || res.type === "opaque") { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
     return res;
   })));
+});
+
+// Team notifications (sent by supabase/functions/notify): show them, and open Requests when tapped
+self.addEventListener("push", e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.title || "Supplier Orders", {
+    body: d.body || "", tag: d.tag, icon: "icons/icon-192.png", badge: "icons/icon-192.png", data: { url: "./?tab=requests" }
+  }));
+});
+
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const url = new URL(e.notification.data && e.notification.data.url || "./", self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+    const open = list.find(c => c.url.startsWith(self.registration.scope));
+    return open ? open.navigate(url).then(c => (c || open).focus()) : self.clients.openWindow(url);
+  }));
 });

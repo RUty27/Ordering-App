@@ -4,7 +4,7 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
 
 ## Structure
 - `index.template.html`: the whole app (HTML/CSS/JS, no framework). `__DATA__` is replaced at build time with `data/data.json`.
-  - UI follows the design handoff (indigo, light + dark): bottom tabs Items / Suppliers / History, floating "Review order" button, Review order screen, bottom sheets (Delivery, Appearance, Send preview, Sent with Undo), welcome screen on first run.
+  - UI follows the design handoff (indigo, light + dark): bottom tabs Items / Suppliers / History (+ Requests in a team), floating "Review order" button, Review order screen, bottom sheets (Delivery, Appearance, Send preview, Sent with Undo), welcome screen on first run.
   - Design tokens are CSS variables (`--bg --sf --card --ink --mute --line --acc --accInk --a1 --a7 --ok --ok1`) on `:root` and `:root[data-theme="dark"]`. Fonts: Caprasimo (headings/buttons) + Figtree (body). Icons: inline Lucide SVG paths in the `ICON` map.
   - Appearance choice (`system` | `light` | `dark`) is per phone in localStorage key `supplier-orders-theme` (not synced); an inline head script applies it before paint.
   - Ordering flow: Send → preview sheet → Open WhatsApp/Copy → "Sent?" sheet (`ask`). Only "Yes, sent" saves to History (`markSent`), then the Sent sheet offers Next / Undo.
@@ -22,7 +22,7 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
   - `build.py` also needs `items.json` (cocktail → ingredient → supplier, from the sheet's "Ingredients & Suppliers" tab). The script that produces it is not in this repo yet.
 - `scripts/inject.py`: writes `dist/` (index.html + `manifest.webmanifest`, `sw.js`, `icons/`).
 - `.github/workflows/deploy.yml`: on push to `main`, runs inject.py and publishes `dist/` to GitHub Pages.
-- `sync.json`: Supabase project URL + public anon key for phone sync. Empty values hide the sync UI. The key is public by design; row-level security protects the data.
+- `sync.json`: Supabase project URL + public anon key for phone sync, plus `vapid` (public push key). Empty values hide the sync UI. The key is public by design; row-level security protects the data.
 - `private/` (git-ignored): the owner's real `data.json` and config.
 
 ## Phone sync (Supabase)
@@ -31,6 +31,12 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
 - supabase-js is loaded from jsdelivr (pinned version, `SUPA_JS`) only when sync is configured; `sw.js` caches it.
 - Pull happens on start, on returning to the foreground and on `online`. Push is a debounced upsert after `save()`. Newest `updated_at` vs `st.updatedAt` wins. On first sign-in the cloud copy wins.
 - Imported data syncs via its `importedAt` stamp. "Use sample data" stores a `{sample:true, importedAt}` marker so other phones follow.
+
+## Teams (supabase/team.sql)
+- Tables `teams` (name, invite `code`, shared `data` + `phones`), `roles` (`can_order`, `can_approve`, `can_manage`, `suppliers` text[] null = all, `is_default`), `members` (one team per user), `requests` (`lines` [{id,q,n,s}], `status` pending | approved | on_hold), `push_subs`. RLS everywhere; joining, role changes, phones and decisions go through security-definer RPCs (`create_team`, `join_team`, `set_member_role`, `set_default_role`, `set_phone`, `decide_request`, `new_team_code`). A team always keeps one manager (constraint trigger).
+- Client (`team` block in the template): `loadTeam()` after pull; `can(p)` / `seesSup(s)` / `phoneOf(s)` are true/personal when not in a team, so solo use is unchanged. Team `data` is applied with a `"team:"+updated_at` stamp in `importedAt` (change → reload). Managers' imports write `teams.data`.
+- Roles without `can_order` see "Send request" on Review instead of per-supplier send; approving adds the lines to the approver's cart. Supplier limits are UI-only (documented).
+- Push: public VAPID key is `sync.json` `vapid`; private key only in Supabase secrets (owner's copy in `private/vapid.txt`). `supabase/functions/notify` (Database Webhook on `requests` insert/update) re-reads the row with the service role, only sends for events < 5 min old, and drops 404/410 subscriptions. `sw.js` shows the notification and opens `./?tab=requests`.
 
 ## Build
     python scripts/inject.py                               # build dist/
