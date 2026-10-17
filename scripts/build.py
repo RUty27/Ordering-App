@@ -49,5 +49,6 @@ L=sorted(out.values(),key=lambda e:(e['s'],e['n'].lower()))
 for i,e in enumerate(L): e['id']=i
 sups=sorted({e['s'] for e in L})
 S=[{'n':s,'t':'online' if s in ONLINE else 'internal' if s==INTERNAL else 'none' if s=='Unassigned' else 'chat','m':MOQ.get(s),'mn':MOQN.get(s),'cut':CUT.get(s)} for s in sups]
-json.dump({'business':cfg.get('business',''),'outlets':cfg.get('outlets',[]),'items':L,'suppliers':S},open('data.json','w'),ensure_ascii=False,separators=(',',':'))
+head={k:cfg[k] for k in ('billing','addresses','deliveryTime') if k in cfg}
+json.dump({'business':cfg.get('business',''),'outlets':cfg.get('outlets',[]),**head,'items':L,'suppliers':S},open('data.json','w'),ensure_ascii=False,separators=(',',':'))
 print(len(L),[ (s['n'],sum(1 for e in L if e['s']==s['n'])) for s in S])
