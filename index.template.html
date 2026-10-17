@@ -369,14 +369,27 @@ function cartBySupplier(){
   return g;
 }
 function addLines(lines){lines.forEach(l=>{if(byId(l.id))st.cart[l.id]=l.q});save();render();toast("Added to order")}
-function message(sup,lines){
-  const note=(st.notes[sup]||"").trim();
-  let m=`Hi ${sup}, order for ${[DATA.business,st.outlet].filter(Boolean).join(" ")}, delivery ${fmtD(DAYS[deliv])}:\n\n`;
-  m+=lines.map(l=>`• ${l.it.n} × ${l.q}`).join("\n");
-  if(note) m+=`\n\n${note}`;
-  return m+"\n\nThank you!";
+// One order line, e.g. "12 btls Sauvignon Blanc". A typed unit ("2 ctn") wins over the item's unit.
+const PLURAL={box:"boxes"};
+function lineText(l){
+  const q=String(l.q).trim(), u=l.it.u;
+  if(!u||/[a-z]/i.test(q)) return `${q} ${l.it.n}`;
+  return `${q} ${qtyNum(q)===1?u:(PLURAL[u]||u+"s")} ${l.it.n}`;
 }
-function sendText(s){const lines=cartBySupplier()[s]||[];return (SUP[s]||{}).t==="online"?lines.map(l=>`${l.it.n} × ${l.q}`).join("\n"):message(s,lines)}
+// Order message: billing + delivery address, date and time, the lines, any note, then "Thanks"
+function message(sup,lines){
+  const note=(st.notes[sup]||"").trim(), d=DAYS[deliv];
+  const addr=(DATA.addresses||{})[st.outlet]||[DATA.business,st.outlet].filter(Boolean).join(" ");
+  const parts=[];
+  if(DATA.billing) parts.push(`*Billing Address*\n🚩${DATA.billing}`);
+  parts.push(`*Delivery Address*\n${addr}`);
+  parts.push(`*Delivery Date:* ${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()} ${DOW[d.getDay()]}`+(DATA.deliveryTime?`\n*Delivery Time:* ${DATA.deliveryTime}`:""));
+  parts.push(lines.map(lineText).join("\n"));
+  if(note) parts.push(note);
+  parts.push("Thanks 😊");
+  return parts.join("\n\n");
+}
+function sendText(s){const lines=cartBySupplier()[s]||[];return (SUP[s]||{}).t==="online"?lines.map(lineText).join("\n"):message(s,lines)}
 function kindOf(s){const sp=SUP[s]||{t:"chat"};if(sp.t==="online")return "online";if(sp.t==="internal")return "internal";return st.phones[s]?"wa":"copy"}
 function waNumber(p){let d=String(p||"").replace(/\D/g,"");if(d.length===8)d="65"+d;return d}
 const ctxLabel = () => `${st.outlet} · ${fmtD(DAYS[deliv])}`;

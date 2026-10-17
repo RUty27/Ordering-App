@@ -4,6 +4,12 @@
   "Outlet A",
   "Outlet B"
  ],
+ "billing": "SAMPLE BAR PTE. LTD.\n1 Example Road\n#01-01\nSingapore 000001",
+ "addresses": {
+  "Outlet A": "SAMPLE BAR (OUTLET A)\n2 Example Street\n#01-02\nSingapore 000002",
+  "Outlet B": "SAMPLE BAR (OUTLET B)\n3 Example Lane\nSingapore 000003"
+ },
+ "deliveryTime": "12pm - 2pm",
  "items": [
   {
    "n": "Calamansi",

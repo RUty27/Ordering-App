@@ -13,7 +13,8 @@ Mobile-first web app for placing weekly supplier orders over WhatsApp for a mult
   - Chosen delivery date is saved as `st.delivery` (yyyy-mm-dd) and kept while it's still one of the next four delivery days.
   - Chip row: "In my order · n" (when the cart has items), All, "Cocktails ›" (switches the row to cocktail chips), then suppliers.
   - Rendering is plain `innerHTML` (`render()` for the page, `renderSheet()` for sheets) with one delegated click handler keyed on `data-act`.
-- `data/data.json`: **fake sample data only** (this repo is public). Top-level keys: `business`, `outlets[]`, `items[]`, `suppliers[]`.
+- `data/data.json`: **fake sample data only** (this repo is public). Top-level keys: `business`, `outlets[]`, `billing` (billing address lines), `addresses` ({outlet: delivery address lines}), `deliveryTime`, `items[]`, `suppliers[]`.
+  - Order message (`message()`): *Billing Address* 🚩billing, *Delivery Address* (outlet address, or "business outlet"), *Delivery Date:* "19 Oct 2026 Mon", *Delivery Time:*, item lines "12 btls Name" (`lineText()`: item unit `u`, pluralised; a typed unit wins), note, "Thanks 😊".
   - Item keys: `id`, `n` name, `s` supplier, `p` price, `pt` price text, `c` category, `pr` promo/note, `pk` pack size, `k` cocktails, `u` unit (btl, ctn, pkt…; optional).
   - Supplier keys: `n` name, `t` type (`chat` | `online` | `internal` | `none`), `m` MOQ text, `mn` MOQ number, `cut` cut-off, `note` free-text note shown on supplier and review cards (optional).
 - Real data is never committed. Users load their own `data.json` with "Import data.json" (Suppliers tab). It is stored in localStorage key `supplier-orders-data` and overrides the built-in sample.

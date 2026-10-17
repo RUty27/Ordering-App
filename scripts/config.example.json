@@ -1,15 +1,41 @@
 {
   "business": "Sample Bar",
-  "outlets": ["Outlet A", "Outlet B"],
-  "alias": {"cl": "Citrus Lane", "citrus lane": "Citrus Lane", "harbour": "Harbour Spirits"},
-  "online": ["Online Mart"],
+  "outlets": [
+    "Outlet A",
+    "Outlet B"
+  ],
+  "alias": {
+    "cl": "Citrus Lane",
+    "citrus lane": "Citrus Lane",
+    "harbour": "Harbour Spirits"
+  },
+  "online": [
+    "Online Mart"
+  ],
   "internal": "Office",
-  "moq": {"Harbour Spirits": "$300", "Citrus Lane": "$80 + GST"},
-  "cut": {"Citrus Lane": "Order by 4pm for next-day delivery", "Office": "Delivers Mondays only"},
+  "moq": {
+    "Harbour Spirits": "$300",
+    "Citrus Lane": "$80 + GST"
+  },
+  "cut": {
+    "Citrus Lane": "Order by 4pm for next-day delivery",
+    "Office": "Delivers Mondays only"
+  },
   "junk_supplier_regex": "^(\\d|price|cut off)",
   "skip_suppliers": [],
   "cocktail_exclude_regex": "Cup|Straw|Napkin",
   "extra_items": [
-    {"n": "Paper Straw (Black)", "s": "Pack & Go", "c": "Packaging", "pk": "250 pcs / pkt"}
-  ]
+    {
+      "n": "Paper Straw (Black)",
+      "s": "Pack & Go",
+      "c": "Packaging",
+      "pk": "250 pcs / pkt"
+    }
+  ],
+  "billing": "SAMPLE BAR PTE. LTD.\n1 Example Road\n#01-01\nSingapore 000001",
+  "addresses": {
+    "Outlet A": "SAMPLE BAR (OUTLET A)\n2 Example Street\n#01-02\nSingapore 000002",
+    "Outlet B": "SAMPLE BAR (OUTLET B)\n3 Example Lane\nSingapore 000003"
+  },
+  "deliveryTime": "12pm - 2pm"
 }
