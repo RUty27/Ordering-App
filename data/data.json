@@ -21,7 +21,8 @@
     "Garden Spritz"
    ],
    "id": 0,
-   "u": "pkt"
+   "u": "pkt",
+   "par": 4
   },
   {
    "n": "Lemons",
@@ -30,7 +31,8 @@
    "c": "Fruit",
    "pk": "1kg",
    "id": 1,
-   "u": "pkt"
+   "u": "pkt",
+   "par": 6
   },
   {
    "n": "Limes",
@@ -43,7 +45,8 @@
     "Garden Spritz"
    ],
    "id": 2,
-   "u": "pkt"
+   "u": "pkt",
+   "par": 10
   },
   {
    "n": "Mint",
@@ -52,7 +55,8 @@
    "c": "Herbs",
    "pk": "1 bunch",
    "id": 3,
-   "u": "pkt"
+   "u": "pkt",
+   "par": 3
   },
   {
    "n": "Pandan Leaves",

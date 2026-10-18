@@ -36,12 +36,12 @@ self.addEventListener("fetch", e => {
   })));
 });
 
-// Team notifications (sent by supabase/functions/notify): show them, and open Requests when tapped
+// Notifications (supabase/functions/notify and remind): show them, and open the page they point to when tapped
 self.addEventListener("push", e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data && e.data.text() }; }
   e.waitUntil(self.registration.showNotification(d.title || "Supplier Orders", {
-    body: d.body || "", tag: d.tag, icon: "icons/icon-192.png", badge: "icons/icon-192.png", data: { url: "./?tab=requests" }
+    body: d.body || "", tag: d.tag, icon: "icons/icon-192.png", badge: "icons/icon-192.png", data: { url: d.url || "./?tab=requests" }
   }));
 });
 
